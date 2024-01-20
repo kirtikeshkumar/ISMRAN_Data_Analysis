@@ -1,0 +1,47 @@
+README file for ISRMAN data analysis code.
+
+
+--------------------------------
+Dependencies :  ROOT , Ismran_Dqm_Precompiled
+--------------------------------
+**NOTE**  
+Kindly clone the Ismran_Dqm_Precompiled repository from  
+https://github.com/rsehgal/Ismran_Dqm_Precompiled  
+and set the required environment variable as mentioned on the home page of the repo.  
+
+--------------------------------
+Compiling the code
+--------------------------------
+First clone the code using
+git clone http://github.com/rsehgal/ISMRAN_Data_Analysis
+
+
+cd ISMRAN_Data_Analysis
+mkdir build
+cd build  
+Copy all the .root files from *rootfile* directory to this build directory  
+cmake ..
+make -j2
+ 
+The default compilation options compiles the code where bars are arranged in vertical order.  
+Its makes use of single point calibration and uses the existing single point energy calibration  
+file **MuonPeak.root**.  
+
+
+--------------------------------
+Processing file in small chunks
+--------------------------------
+
+Processing a complete file in single shots needs a lot of RAM,
+So a better idea would be to process the data in chunks.
+
+To do that a Shots mechanism is implemented,
+which is controlled by a shell script **runshots.sh** kept in **scripts** directory.
+
+To use shots mechanism copy the runshots.sh file in you build directory and run it by
+providing following required arguements
+
+. runshots.sh <Full data file path> <number of shots>
+
+For e.g.
+. runshots.sh ~/DevShare/test_PartialShield_Muon_11hrs56mins02secs_07Oct2021_Run77.root 4

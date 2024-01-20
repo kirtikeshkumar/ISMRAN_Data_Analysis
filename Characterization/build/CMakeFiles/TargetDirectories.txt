@@ -1,0 +1,6 @@
+/media/kirtikesh/Kirtikesh_4TB/ISMRAN/ISMRAN_Data_Analysis/Characterization/build/CMakeFiles/Characterization.dir
+/media/kirtikesh/Kirtikesh_4TB/ISMRAN/ISMRAN_Data_Analysis/Characterization/build/CMakeFiles/Test_RegExp.dir
+/media/kirtikesh/Kirtikesh_4TB/ISMRAN/ISMRAN_Data_Analysis/Characterization/build/CMakeFiles/Test_DirListing.dir
+/media/kirtikesh/Kirtikesh_4TB/ISMRAN/ISMRAN_Data_Analysis/Characterization/build/CMakeFiles/Test_GenerateCalibrationFile.dir
+/media/kirtikesh/Kirtikesh_4TB/ISMRAN/ISMRAN_Data_Analysis/Characterization/build/CMakeFiles/edit_cache.dir
+/media/kirtikesh/Kirtikesh_4TB/ISMRAN/ISMRAN_Data_Analysis/Characterization/build/CMakeFiles/rebuild_cache.dir
