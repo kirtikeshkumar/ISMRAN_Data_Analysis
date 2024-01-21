@@ -3,8 +3,8 @@
  * 2023-10-03
  * Code to test the reduction in single events if vetoed using events in
  * 		jacket layer on all four sides.
- * IsJacket function defined in HardwareNomenclature defines the bars in 
- * 		jacket layer.
+ * GetJacketBarIndx function defined in HardwareNomenclature gives the index of bars in 
+ * 		jacket layer
  */
 
 #include <iostream>
@@ -28,22 +28,23 @@ int main(int argc, char *argv[]){
 	unsigned int numVeto	= 0;					// number of vetoed events
 	const int dT			= 20000;				// dead time in picoseconds
 	ULong64_t fdTStamp		= 0;					// =time of jacket hit + dead time 
-	ushort barVIndx			= 10000;				// index of bar being vetoed by jacket
+	//ushort barVIndx			= 10000;				// index of bar being vetoed by jacket
 	ULong64_t StartTStamp	= 0;					// Start of File TStamp
 	ULong64_t StopTStamp	= 0;					// End of File TStamp
 	int QMean				= 0;					// QMean for single event
 	Double_t E				= 0.0;					// Energy corresponding to a single event
 	ushort numVetoLayers	= 4;					// Number of Layers to use for Veto
-	std::string barName     = "PS45_S1AA6525";		// bar to veto 
+	ushort barindex;
+	
+	//std::string barName     = "PS45_S1AA6525";		// bar to veto 
 	//std::string barName     = "PS15_S2AB1011";
 	//std::string barName     = "PS62_S3AA1781";
 	//std::string barName     = "PS49_S1AA6642";
 	//std::string barName     = "PS25_S2AB0717";
 	//std::string barName     = "PS66_S1AA6639";
 	//std::string barName     = "PS48_S1AA6708";
-	ushort barindex;
-	barVIndx = ismran::GetIndexFromBarName(ismran::vecOfPsBars,barName);
-	std::cout << "the index for bar "<<barName<<" is "<<barVIndx<<std::endl;
+	//barVIndx = ismran::GetIndexFromBarName(ismran::vecOfPsBars,barName);
+	//std::cout << "the index for bar "<<barName<<" is "<<barVIndx<<std::endl;
 	
 	std::vector<ismran::ScintillatorBar_F *> vecNoVetos;
 	std::vector<ismran::ScintillatorBar_F *> vecOfSignal;
@@ -58,25 +59,27 @@ int main(int argc, char *argv[]){
 	
 	//Generate a calibration object and extract the calibration for the required bar
 	ismran::Calibration Calib(calibFileName);																				
-	ismran::CalibrationData *CalibDat = Calib.GetCalibrationDataOf(barVIndx);
-	TF1 ECalib = *CalibDat->GetEnergyCalibFormula();
+	ismran::CalibrationData *CalibDat;// = Calib.GetCalibrationDataOf(barVIndx);
+	TF1 ECalib;// = *CalibDat->GetEnergyCalibFormula();
 	
-	TH1* HFull = new TH1D("HFull", "", 1000, 0.0, 100.0);					//Histogram for All events in the required bar
+	TH1* HFull = new TH1D("HFull", "", 1000, 0.0, 100.0);				//Histogram for All events in the required bar
 	HFull->SetLineColor(kGreen);
-	TH1* HSig  = new TH1D("HSig", "", 1000, 0.0, 100.0);					//Histrogram of events after veto
+	TH1* HSig  = new TH1D("HSig", "", 1000, 0.0, 100.0);				//Histrogram of events after veto
 	HSig->SetLineColor(kRed);
 	
 	std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
 	
 	for(int i=0;i < vecOfScint.size();i++){
 		barindex = vecOfScint[i]->GetBarIndex();
-		if(ismran::IsJacket(barindex, VetoBarsIndx)){									//is the event in jacket?
+		if(ismran::IsJacket(barindex, VetoBarsIndx)){					//is the event in jacket?
 			/*if(barindex==barVIndx){
 				std::cout << "Hi" << std::endl;
 			}*/
 			fdTStamp = vecOfScint[i]->GetTStampSmall()+dT;
 			//numVeto += 1;
-		}else if(barindex==barVIndx){
+		}else{// if(barindex==barVIndx){
+			CalibDat = Calib.GetCalibrationDataOf(barindex);
+			ECalib = CalibDat->GetEnergyCalibFormula();
 			//std::cout << "Hi" << std::endl;
 			vecNoVetos.push_back(vecOfScint[i]);
 			QMean = vecOfScint[i]->GetQMean();
