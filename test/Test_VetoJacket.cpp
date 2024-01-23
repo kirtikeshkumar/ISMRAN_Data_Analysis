@@ -19,10 +19,17 @@
 #include "TFile.h"
 #include "TCanvas.h"
 #include "TH1F.h"
+#include <filesystem>
+namespace fs = std::filesystem;
+
 int main(int argc, char *argv[]){
 	//std::cout<<"0th argv"<<std::string(argv[0])<<std::endl;
 	std::string dataFileName    = std::string(argv[1]);
-	std::string calibFileName	= std::string(argv[2]);
+	fs::path calibFilePath	= std::string(argv[2]);
+	
+	std::string calibFileName;
+	std::string BarName;
+	
 	unsigned int numOfEvts	= 0;
 	unsigned int numEvts	= 0;					// number of events not vetoed
 	unsigned int numVeto	= 0;					// number of vetoed events
@@ -57,11 +64,6 @@ int main(int argc, char *argv[]){
 	std::sort(vecOfScint.begin(), vecOfScint.end(), ismran::CompareTimestampScintillator);	//sort all events according to fTStamp
 	
 	
-	//Generate a calibration object and extract the calibration for the required bar
-	ismran::Calibration Calib(calibFileName);																				
-	ismran::CalibrationData *CalibDat;// = Calib.GetCalibrationDataOf(barVIndx);
-	TF1 ECalib;// = *CalibDat->GetEnergyCalibFormula();
-	
 	TH1* HFull = new TH1D("HFull", "", 1000, 0.0, 100.0);				//Histogram for All events in the required bar
 	HFull->SetLineColor(kGreen);
 	TH1* HSig  = new TH1D("HSig", "", 1000, 0.0, 100.0);				//Histrogram of events after veto
@@ -69,12 +71,18 @@ int main(int argc, char *argv[]){
 	
 	std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
 	
-	for(int i=0;i < vecOfScint.size();i++){
-		barindex = vecOfScint[i]->GetBarIndex();
+	//Generate a calibration object and extract the calibration for the required bar
+	ismran::Calibration Calib(calibFilePath.string());
+	ismran::CalibrationData *CalibDat;// = Calib.GetCalibrationDataOf(barVIndx);
+	TF1 ECalib;// = *CalibDat->GetEnergyCalibFormula();
+	
+	//for(int i=0;i < vecOfScint.size();i++){
+	/*for(int i=0;i < 100;i++){
+		barindex = vecOfScint[i]->GetBarIndex();	
 		if(ismran::IsJacket(barindex, VetoBarsIndx)){					//is the event in jacket?
 			/*if(barindex==barVIndx){
 				std::cout << "Hi" << std::endl;
-			}*/
+			}*//*
 			fdTStamp = vecOfScint[i]->GetTStampSmall()+dT;
 			//numVeto += 1;
 		}else{// if(barindex==barVIndx){
@@ -96,7 +104,7 @@ int main(int argc, char *argv[]){
 	}
 	//std::cout << "First event TStamp: "<<vecOfScint[0]->GetTStampSmall()<<std::endl;
 	//std::cout << "Time range: "<<vecOfScint[vecOfScint.size()-1]->GetTStampSmall()-vecOfScint[0]->GetTStampSmall()<<std::endl;
-	std::cout << "Total number of events: "<<numEvts+numVeto<<" "<<vecOfScint.size()<<std::endl;
+	/*std::cout << "Total number of events: "<<numEvts+numVeto<<" "<<vecOfScint.size()<<std::endl;
 	std::cout << "Vetoed events: "<<numVeto<<std::endl;
 	std::cout << "Signal events: "<<numEvts<<std::endl;
 	//std::cout << vecOfScint[10]->GetQNear()<<" "<<vecOfScint[10]->GetQFar()<<" "<<vecOfScint[10]->GetQMean()<<" "<<ECalib(vecOfScint[10]->GetQMean())<<std::endl;
@@ -119,5 +127,5 @@ int main(int argc, char *argv[]){
 	std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
 	//c1->SaveAs(("./Spectra_2Jacket_"+barName+"_"+fname+".pdf").c_str());
 	c1->SaveAs(("./Spectra_"+barName+"_"+fname+".pdf").c_str());
-	
+	*/
 }

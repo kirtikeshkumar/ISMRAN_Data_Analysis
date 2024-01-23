@@ -12,6 +12,7 @@
 #include "HardwareNomenclature.h"
 #include <TH1D.h>
 #include "colors.h"
+#include <TString.h>
 namespace ismran {
 
 Calibration *Calibration::s_instance = 0;
@@ -47,8 +48,10 @@ Calibration *Calibration::instance()
 Calibration::Calibration(std::string fileName)
 {
   fFileName = fileName;
-  TFile *fp = new TFile(fileName.c_str(), "r");
+  std::string BarName;
+  std::string calibFileName;
   unsigned int numOfBars = vecOfPsBars.size(); // vecOfBarsName.size();
+  /* For the case of combined calibration file
   for (unsigned int barIndex = 0; barIndex < numOfBars; barIndex++) {
 
     TF1 *delTShift_F = (TF1 *)fp->Get(Form("fdelt_shift_Cs137_%s_0cm", vecOfPsBars[barIndex].c_str()));
@@ -60,6 +63,22 @@ Calibration::Calibration(std::string fileName)
     std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
 
     fVecOfCalibrationData.push_back(new CalibrationData(delTShift_F, paramertization_F, enerCalibFormula)); 
+  }*/
+  
+  //for the case of individual bar calibration files
+  for (unsigned int barIndex = 0; barIndex < numOfBars; barIndex++){
+	  BarName = ismran::vecOfPsBars[barIndex];
+	  calibFileName = Form("calibration_%s.root", BarName.c_str());
+	  TFile *fp = new TFile((fileName+calibFileName).c_str(), "r");
+	  std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
+      std::cout << "Processing Bar : " << BarName << std::endl;
+      std::cout << "calib file: "<<fileName+calibFileName<<std::endl;
+      std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
+	  TF1 *delTShift_F;													//to complete
+	  TF1 *paramertization_F;											//to complete
+	  TF1 *enerCalibFormula = (TF1 *)fp->Get(Form("%s_ECalib", BarName.c_str()));
+	  fVecOfCalibrationData.push_back(new CalibrationData(delTShift_F, paramertization_F, enerCalibFormula)); 
+	  fp->Close();
   }
 }
 
