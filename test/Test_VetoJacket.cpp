@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
 	
 	std::string calibFileName;
 	std::string BarName;
+	char* output;
 	
 	unsigned int numOfEvts	= 0;
 	unsigned int numEvts	= 0;					// number of events not vetoed
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]){
 	ULong64_t StopTStamp	= 0;					// End of File TStamp
 	int QMean				= 0;					// QMean for single event
 	Double_t E				= 0.0;					// Energy corresponding to a single event
-	ushort numVetoLayers	= 4;					// Number of Layers to use for Veto
+	ushort numVetoLayers	= std::strtol(argv[3], &output, 10);			// Number of Layers to use for Veto
 	ushort barindex;
 	
 	//std::string barName     = "PS45_S1AA6525";		// bar to veto 
@@ -58,6 +59,7 @@ int main(int argc, char *argv[]){
 	TCanvas *c1 = new TCanvas("c1","",20,10,800,600);
 	c1->cd(1);
 	
+	std::cout<<"NUMBER OF VETO LAYERS IS "<<numVetoLayers<<std::endl;
 	
 	ismran::Analyzer_F an(dataFileName, numOfEvts);											//read the events in file
 	std::vector<ismran::ScintillatorBar_F *> vecOfScint = an.GetVectorOfScintillators(); 	//adds all events into a vector
@@ -76,35 +78,33 @@ int main(int argc, char *argv[]){
 	ismran::CalibrationData *CalibDat;// = Calib.GetCalibrationDataOf(barVIndx);
 	TF1 ECalib;// = *CalibDat->GetEnergyCalibFormula();
 	
-	//for(int i=0;i < vecOfScint.size();i++){
-	/*for(int i=0;i < 100;i++){
+	for(int i=0;i < vecOfScint.size();i++){
+	//for(int i=0;i < 100;i++){
 		barindex = vecOfScint[i]->GetBarIndex();	
 		if(ismran::IsJacket(barindex, VetoBarsIndx)){					//is the event in jacket?
-			/*if(barindex==barVIndx){
-				std::cout << "Hi" << std::endl;
-			}*//*
+			std::cout << "Hi" << std::endl;
 			fdTStamp = vecOfScint[i]->GetTStampSmall()+dT;
 			//numVeto += 1;
 		}else{// if(barindex==barVIndx){
 			CalibDat = Calib.GetCalibrationDataOf(barindex);
-			ECalib = CalibDat->GetEnergyCalibFormula();
-			//std::cout << "Hi" << std::endl;
+			ECalib = *CalibDat->GetEnergyCalibFormula();
+			std::cout << "Hi Again" << i << std::endl;
 			vecNoVetos.push_back(vecOfScint[i]);
 			QMean = vecOfScint[i]->GetQMean();
-			HFull->Fill(ECalib(QMean));
+			HFull->Fill(ECalib(QMean)/1000.0);
 			if(vecOfScint[i]->GetTStampSmall() < fdTStamp){				//has the deadtime passed?
 				numVeto += 1;
 				//vecOfVetos.push_back(vecOfScint[i]);
 			}else{
 				numEvts += 1;
 				vecOfSignal.push_back(vecOfScint[i]);
-				HSig->Fill(ECalib(QMean));
+				HSig->Fill(ECalib(QMean)/1000.0);
 			}
 		}
 	}
 	//std::cout << "First event TStamp: "<<vecOfScint[0]->GetTStampSmall()<<std::endl;
 	//std::cout << "Time range: "<<vecOfScint[vecOfScint.size()-1]->GetTStampSmall()-vecOfScint[0]->GetTStampSmall()<<std::endl;
-	/*std::cout << "Total number of events: "<<numEvts+numVeto<<" "<<vecOfScint.size()<<std::endl;
+	std::cout << "Total number of events: "<<numEvts+numVeto<<" "<<vecOfScint.size()<<std::endl;
 	std::cout << "Vetoed events: "<<numVeto<<std::endl;
 	std::cout << "Signal events: "<<numEvts<<std::endl;
 	//std::cout << vecOfScint[10]->GetQNear()<<" "<<vecOfScint[10]->GetQFar()<<" "<<vecOfScint[10]->GetQMean()<<" "<<ECalib(vecOfScint[10]->GetQMean())<<std::endl;
@@ -126,6 +126,6 @@ int main(int argc, char *argv[]){
 	//ECalib->Draw();
 	std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
 	//c1->SaveAs(("./Spectra_2Jacket_"+barName+"_"+fname+".pdf").c_str());
-	c1->SaveAs(("./Spectra_"+barName+"_"+fname+".pdf").c_str());
-	*/
+	c1->SaveAs(("./"+fname+"_Spectra_with_"+std::to_string(numVetoLayers)+"_VetoLayers"+".pdf").c_str());
+	
 }
