@@ -83,6 +83,7 @@ public:
   Long_t GetTStampNear() const;
   Long_t GetTStampFar();
   Long_t GetTStampSmall();
+  Long_t GetTStampLarge();
   Long_t GetTStampAverage();
 
   // Function to get the parameterization

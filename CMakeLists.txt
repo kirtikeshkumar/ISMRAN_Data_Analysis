@@ -34,7 +34,7 @@ endif()
 #
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
 
-option(SINGLE_POINT_CALIBRATION "Use Single Point Muon Calibration" ON)
+option(SINGLE_POINT_CALIBRATION "Use Single Point Muon Calibration" OFF)
 option(VERTICAL_ARRANGEMENT "Use VERTICAL_ARRANGEMENT" ON)
 option(FOLDED_DATA "Use FOLDED_DATA" ON)
 option(VERBOSE "Switching it ON will a lot of debuggin info" OFF)

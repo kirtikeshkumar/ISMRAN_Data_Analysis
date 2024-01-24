@@ -166,6 +166,14 @@ Long_t ScintillatorBar_F::GetTStampSmall()
     return GetTStampFar();
 }
 
+Long_t ScintillatorBar_F::GetTStampLarge()
+{
+  if (fDelt < 0)
+    return GetTStampFar();
+  else
+    return GetTStampNear();
+}
+
 Long_t ScintillatorBar_F::GetTStampAverage()
 {
 	return (GetTStampNear()-GetTStampFar())/2.0+GetTStampFar()-1.66782048E-9;
@@ -234,16 +242,17 @@ Double_t ScintillatorBar_F::GetQMeanCorrected(unsigned int muonPeakPos)
 
 Double_t ScintillatorBar_F::GetQMeanCorrected()
 {
-  {
     Double_t ener       = 0.;
     std::string barName = vecOfPsBars[fBarIndex];
     //   unsigned int sequentialBarIndex = GetIndexFromBarName(barName);
 
 #ifndef SINGLE_POINT_CALIBRATION
-    TF1 *enercalibFormula = Calibration::instance()->GetCalibrationDataOf(sequentialBarIndex)->GetEnergyCalibFormula();
+	//std::cout << "entered single point calib" <<std::endl;
+    TF1 *enercalibFormula = Calibration::instance()->GetCalibrationDataOf(fBarIndex)->GetEnergyCalibFormula();
     ener                  = (enercalibFormula->Eval(GetQMean()));
     // std::cout << "Predicted Energy : " << ener << std::endl;
 #else
+	//std::cout << "entered else" <<std::endl;
     // Using single point calibration, and using equation of straight line to get y correspoinding to a x
     // ener = (20. / (1. * GetPeakPos(vecOfBarsNamess[sequentialBarIndex]))) * GetQMean();
     // std::cout << RED << "BarIndex : " << fBarIndex << " : Peak Pos : " << vecOfPeakPos[fBarIndex] << " : " <<
@@ -254,6 +263,6 @@ Double_t ScintillatorBar_F::GetQMeanCorrected()
       ener = GetQMean();
 #endif
     return ener;
-  }
+  
 }
 } // namespace ismran
