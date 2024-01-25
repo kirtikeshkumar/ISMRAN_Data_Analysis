@@ -45,35 +45,75 @@ int main(int argc, char *argv[]){
 	//Reading and sorting events from file
 	unsigned int numOfEvts	= 0;
 	ismran::Analyzer_F an(dataFileName, numOfEvts);						//read the events in file
-	std::vector<ismran::SingleBasket *> vecOfBaskets; 				
-	if(argv[3]){														//construct baskets
+	std::vector<ismran::SingleBasket *> vecOfBaskets;	
+	std::vector<ismran::SingleBasket *> vecOfBasketsPostVeto;	
+	if(argv[3] and basketdT!=0){														//construct baskets
 		vecOfBaskets = an.ReconstructBasket(basketdT);
 	}else{vecOfBaskets = an.ReconstructBasket();}
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
 	
+	
+	//Implementing veto functionality
+	/*if(argv[4]){
+		std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
+		ushort barindex;
+		bool veto=false;
+		std::vector<ScintillatorBar_F *> basketscint;
+		for(int i=0; i<basketVecSize; i++){
+			basketscint = vecOfBaskets[i]->GetBasket();
+			for(int j=0; j<basketscint->size(); j++){
+				barindex = basketscint[j]->GetBarIndex();
+				veto=veto or ismran::IsJacket(barindex, VetoBarsIndx);
+			}
+			if(!veto){vecOfBasketsPostVeto->push_back(new SingleBasket(vecOfBaskets[i]));}
+		}
+	}*/
+	
 	//Generating plots
-	/*TCanvas *c1 = new TCanvas("c1","",20,10,800,600);
+	TCanvas *c1 = new TCanvas("c1","",20,10,800,600);
 	c1->cd(1);
-	TH1* HdTEvtinBasket = new TH1D("HdTEvtinBasket", "", 1000, 1.0, 12);//Histogram for dT between events in basket
-	HdTEvtinBasket->SetLineColor(kGreen);
-	for(int i=1; i<basketVecSize; i++){
-		//for(int j=1; j<vecOfBaskets[i]->size(); j++){
-		//	ULong64_t delTime = vecOfBaskets[i]->GetBasketEventTime(j)-vecOfBaskets[i]->GetBasketEventTime(j-1);
-		//	HdTEvtinBasket->Fill(delTime/1000.0);
-		//}
-		ULong64_t delTime = vecOfBaskets[i]->GetBasketStartTime()-vecOfBaskets[i-1]->GetBasketStartTime();
-		HdTEvtinBasket->Fill(log10(delTime/1000.0));
-		//if(vecOfBaskets[i]->size()==1){HdTEvtinBasket->Fill(0.0);}
+	
+	TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 1000);
+	HEUnVeto->SetLineColor(kGreen);
+	TH1* HEVeto = new TH1D("HEVeto", "", 301, 0, 1000);
+	HEVeto->SetLineColor(kRed);
+	if(argv[4]){
+		std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
+		ushort barindex;
+		bool veto=false;
+		std::vector<ismran::ScintillatorBar_F *> basketscint;
+		for(int i=0; i<basketVecSize; i++){
+			HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
+			basketscint = vecOfBaskets[i]->GetBasket();
+			for(int j=0; j<basketscint.size(); j++){
+				barindex = basketscint[j]->GetBarIndex();
+				veto=ismran::IsJacket(barindex, VetoBarsIndx);
+				if(veto){break;}
+			}
+			if(!veto){
+				//vecOfBasketsPostVeto.push_back(new SingleBasket(vecOfBaskets[i]));
+				HEVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
+			}
+			
+		}
 	}
 	
-	gPad->SetLogy();
-	gPad->SetLogx();
-	HdTEvtinBasket->GetXaxis()->SetTitle("DelT Evt (ms)");
-    HdTEvtinBasket->GetYaxis()->SetTitle("Counts");
-    HdTEvtinBasket->Draw("C");
+	//gPad->SetLogy();
+	//gPad->SetLogx();   
+   
+    HEUnVeto->GetXaxis()->SetTitle("Energy(MeV)");
+    HEUnVeto->GetYaxis()->SetTitle("Counts");
+    HEUnVeto->Draw("C");
+    HEVeto->Draw("SAME");
+    TLegend *leg = new TLegend(0.5,0.6,0.8,0.8);
+    leg->SetBorderSize(0);
+    leg->AddEntry(HEUnVeto,"Total Energy Spectra","l");
+    leg->AddEntry(HEVeto,"Vetoed Energy Spectra","l");
+    leg->Draw();
     std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
-	c1->SaveAs(("./delTEvt_"+fname+".root").c_str());
+	
+	c1->SaveAs(("./EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers"+fname+".root").c_str());
 	fApp->Run();
-	*/
+	
 }
