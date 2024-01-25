@@ -20,7 +20,7 @@ class ScintillatorBar_F;
 class SingleBasket {
 private:
   std::vector<ScintillatorBar_F*> fVecOfScintillators;
-  
+  Double_t BasketEnergy;
 public:
   /*
    * Various constructors
@@ -43,7 +43,10 @@ public:
   ULong64_t GetBasketEventTime(int EvtIndx);
   ULong64_t GetBasketStartTime();
   ULong64_t GetBasketEndTime();
-
+  ULong64_t GetBasketDuration();
+  ULong64_t GetBasketEnergy();
+  void SetBasketEnergy();
+  bool isBarInBasket(ushort barIndx);
   /*
    * Print functions
    */

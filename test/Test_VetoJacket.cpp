@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
 		if(ismran::IsJacket(barindex, VetoBarsIndx)){					//is the event in jacket?
 			JacketTStamp = EvtTStamp;
 			//std::cout<<" Jacket TStamp "<<JacketTStamp<<std::endl;
-		}else{
+		}else{// if(barindex==35){
 			CalibDat = Calib.instance()->GetCalibrationDataOf(barindex);
 			ECalib = *CalibDat->GetEnergyCalibFormula();
 			vecNoVetos.push_back(vecOfScint[i]);
@@ -116,14 +116,15 @@ int main(int argc, char *argv[]){
     //HFull->GetXaxis()->SetLimits(0,10.0);
     HFull->Draw();
     HSig->Draw("SAME");
-    HdT->Draw("SAME");
+    //HdT->Draw("SAME");
     TLegend *leg = new TLegend(0.5,0.6,0.8,0.8);
     leg->SetBorderSize(0);
     leg->AddEntry(HFull,"All Events","l");
     leg->AddEntry(HSig,"After Veto","l");
-    leg->AddEntry(HdT,"dT/300","l");
+    //leg->AddEntry(HdT,"dT/300","l");
     leg->Draw();
 	//ECalib->Draw();
 	
 	c1->SaveAs(("./"+fname+"_Spectra_with_"+std::to_string(numVetoLayers)+"_VetoLayers"+".pdf").c_str());
+	//c1->SaveAs(("./"+fname+"_Spectra_"+ ismran::vecOfPsBars[35] +"_with_"+std::to_string(numVetoLayers)+"_VetoLayers"+".pdf").c_str());
 }

@@ -35,6 +35,7 @@ public:
   //std::vector<std::shared_ptr<ScintillatorBar_F>> GetVectorOfScintillators();
   std::vector<SingleMuonTrack*> ReconstructMuonTrack();
   std::vector<SingleBasket *> ReconstructBasket();
+  std::vector<SingleBasket *> ReconstructBasket(uint basketdT);
   //std::vector<std::shared_ptr<SingleMuonTrack>> ReconstructMuonTrack();
   //std::vector<SingleMuonTrack *> ReconstructMuonTrack();
   unsigned int GetFileTime()const;

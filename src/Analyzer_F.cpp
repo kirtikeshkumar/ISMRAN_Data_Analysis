@@ -281,32 +281,70 @@ std::vector<SingleMuonTrack *> Analyzer_F::ReconstructMuonTrack()
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
 {
-  std::cout << "Going to Create Baskets.................." << std::endl;
+  std::cout << "Going to Create Baskets based on delT between events" << std::endl;
+  std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(), CompareTimestampScintillator);
+  unsigned int scintVecSize = fVecOfScint_F.size();
+  std::cout << "ScintVectSize : " << scintVecSize << std::endl;
+  SingleBasket *singleBasket = new SingleBasket();
+  //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
+  std::vector<SingleBasket *> sbVec;
+  std::string outfileName = "Baskets_EventDelT_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
+  basketFile->cd();
+  TTree *basketTree = new TTree("basketTree", "basketTree");
+  basketTree->Branch("Baskets", "ismran::SingleBasket", &singleBasket);
+  ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
+  double_t delt=0;
+  singleBasket->push_back(fVecOfScint_F[0]);
+  //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
+  for (unsigned int i = 1; i < scintVecSize; i++) {
+      if (fVecOfScint_F[i]->GetTStampSmall() - singleBasket->GetBasketEndTime() < 20000) {
+        // 2 consecutive events within 20ns window
+        singleBasket->push_back(fVecOfScint_F[i]);
+        //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
+      } else {
+		  sbVec.push_back(new SingleBasket(*singleBasket));
+		  basketTree->Fill();
+		  singleBasket->clear();
+          singleBasket->push_back(fVecOfScint_F[i]);
+          tStart = fVecOfScint_F[i]->GetTStampSmall();
+      }
+ //   }
+  }
+  std::cout << "SBVec size : " << sbVec.size() << std::endl;
+  basketTree->Write();
+  basketFile->Close();
+  return sbVec;
+}
+
+std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
+{
+  std::cout << "Going to Create Baskets with Max Timespan " << basketdT << std::endl;
   std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(), CompareTimestampScintillator);
   unsigned int scintVecSize = fVecOfScint_F.size();
   std::cout << "ScintVectSize : " << scintVecSize << std::endl;
   SingleBasket *singleBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
   
-  std::string outfileName = "Baskets_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "Baskets_of_TSpan_" + std::to_string(basketdT/1000.0) + "ms_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
   basketTree->Branch("Baskets", "ismran::SingleBasket", &singleBasket);
 
-  ULong64_t tStart = fVecOfScint_F[0]->GetTStampAverage();
+  ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
   double_t delt=0;
   for (unsigned int i = 0; i < scintVecSize; i++) {
 	  //std::cout<<tStart<<"	"<<fVecOfScint_F[i]->GetTStampAverage()<<"	"<<fVecOfScint_F[i]->GetTStampAverage() - tStart<<std::endl;
-      if (fVecOfScint_F[i]->GetTStampAverage() - tStart < 20000) {
-        // Within 20ns window
+      if (fVecOfScint_F[i]->GetTStampSmall() - tStart < basketdT) {
+        // Within basketdT window
         singleBasket->push_back(fVecOfScint_F[i]);
       } else {
 		  sbVec.push_back(new SingleBasket(*singleBasket));
 		  basketTree->Fill();
 		  singleBasket->clear();
           singleBasket->push_back(fVecOfScint_F[i]);
-          tStart = fVecOfScint_F[i]->GetTStampAverage();
+          tStart = fVecOfScint_F[i]->GetTStampSmall();
       }
  //   }
   }
