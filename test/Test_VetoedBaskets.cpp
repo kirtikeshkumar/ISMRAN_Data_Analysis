@@ -53,7 +53,6 @@ int main(int argc, char *argv[]){
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
 	
-	
 	//Implementing veto functionality
 	/*if(argv[4]){
 		std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
@@ -74,11 +73,34 @@ int main(int argc, char *argv[]){
 	TCanvas *c1 = new TCanvas("c1","",20,10,800,600);
 	c1->cd(1);
 	
+	/* For energy Spectra
 	TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 1000);
 	HEUnVeto->SetLineColor(kGreen);
 	TH1* HEVeto = new TH1D("HEVeto", "", 301, 0, 1000);
-	HEVeto->SetLineColor(kRed);
-	if(argv[4]){
+	HEVeto->SetLineColor(kRed);*/
+	
+	// For 2d hits 
+	TH2I* H2D = new TH2I("H2D", "2D Hits", 9,0,8, 10,0,9); 
+	std::vector<ismran::ScintillatorBar_F *> basketscint;
+	
+	
+	ushort indxb;
+	for(int i=0; i<vecOfBaskets.size(); i++){
+		if(vecOfBaskets[i]->size()>=15){
+			basketscint = vecOfBaskets[i]->GetBasket();
+			for(int j=0;j<basketscint.size();j++){
+				indxb = basketscint[j]->GetBarIndex();
+				H2D->Fill(indxb/10,indxb%10);
+			}
+			break;
+		}
+	}
+	
+	H2D->GetXaxis()->SetTitle("X");
+	H2D->GetYaxis()->SetTitle("Y");
+	H2D->Draw();
+	fApp->Run();
+	/*if(argv[4]){
 		std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
 		ushort barindex;
 		bool veto=false;
@@ -99,14 +121,14 @@ int main(int argc, char *argv[]){
 		}
 	}
 	
-	//gPad->SetLogy();
+	gPad->SetLogy();
 	//gPad->SetLogx();   
    
     HEUnVeto->GetXaxis()->SetTitle("Energy(MeV)");
     HEUnVeto->GetYaxis()->SetTitle("Counts");
     HEUnVeto->Draw("C");
     HEVeto->Draw("SAME");
-    TLegend *leg = new TLegend(0.5,0.6,0.8,0.8);
+    TLegend *leg = new TLegend(0.6,0.7,0.75,0.85);
     leg->SetBorderSize(0);
     leg->AddEntry(HEUnVeto,"Total Energy Spectra","l");
     leg->AddEntry(HEVeto,"Vetoed Energy Spectra","l");
@@ -115,5 +137,5 @@ int main(int argc, char *argv[]){
 	
 	c1->SaveAs(("./EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers"+fname+".root").c_str());
 	fApp->Run();
-	
+	*/
 }
