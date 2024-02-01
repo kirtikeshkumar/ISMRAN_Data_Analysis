@@ -242,14 +242,16 @@ Double_t ScintillatorBar_F::GetQMeanCorrected(unsigned int muonPeakPos)
 
 Double_t ScintillatorBar_F::GetQMeanCorrected()
 {
-    Double_t ener       = 0.;
+    Double_t ener       = 0.0;
     std::string barName = vecOfPsBars[fBarIndex];
     //   unsigned int sequentialBarIndex = GetIndexFromBarName(barName);
 
 #ifndef SINGLE_POINT_CALIBRATION
 	//std::cout << "entered single point calib" <<std::endl;
     TF1 *enercalibFormula = Calibration::instance()->GetCalibrationDataOf(fBarIndex)->GetEnergyCalibFormula();
+    //std::cout<<"QMean "<<GetQMean()<<std::endl;
     ener                  = (enercalibFormula->Eval(GetQMean()));
+    //std::cout<<"QMean Corrected "<<ener<<"keV or "<<ener/1000.0<<" MeV"<<std::endl;
     // std::cout << "Predicted Energy : " << ener << std::endl;
 #else
 	//std::cout << "entered else" <<std::endl;

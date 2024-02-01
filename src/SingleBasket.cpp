@@ -81,11 +81,14 @@ namespace ismran
   ULong64_t SingleBasket::GetBasketStartTime(){return GetBasketEventTime(0);}
   ULong64_t SingleBasket::GetBasketEndTime(){return GetBasketEventTime(size()-1);}
   ULong64_t SingleBasket::GetBasketDuration(){return GetBasketEndTime()-GetBasketStartTime();}
-  ULong64_t SingleBasket::GetBasketEnergy(){return BasketEnergy;}
+  Double_t SingleBasket::GetBasketEnergy(){return BasketEnergy;}
   void SingleBasket::SetBasketEnergy(){
 	  BasketEnergy=0.0;
 	  for(int i=0; i < fVecOfScintillators.size(); i++){
 		  BasketEnergy += fVecOfScintillators[i]->GetQMeanCorrected()/1000.0;
+		  /*if(fVecOfScintillators[i]->GetQMeanCorrected()<=0.0){
+			  std::cout<<fVecOfScintillators[i]->GetBarIndex()<<"		"<<fVecOfScintillators[i]->GetQMean()<<std::endl;
+		  }*/
 	  }
   }
 

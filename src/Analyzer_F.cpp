@@ -303,11 +303,15 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
         singleBasket->push_back(fVecOfScint_F[i]);
         //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
       } else {
+		  singleBasket->SetBasketEnergy();
+		  //std::cout<<"				Basket Energy Is "<<singleBasket->GetBasketEnergy()<<std::endl;
 		  sbVec.push_back(new SingleBasket(*singleBasket));
 		  basketTree->Fill();
 		  singleBasket->clear();
+		  //std::cout<<"________________________________________________________"<<std::endl;
           singleBasket->push_back(fVecOfScint_F[i]);
           tStart = fVecOfScint_F[i]->GetTStampSmall();
+          
       }
  //   }
   }
@@ -326,7 +330,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
   SingleBasket *singleBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
   
-  std::string outfileName = "Baskets_of_TSpan_" + std::to_string(basketdT/1000.0) + "ms_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "Baskets_of_TSpan_" + std::to_string(basketdT/1000) + "ms_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -340,6 +344,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
         // Within basketdT window
         singleBasket->push_back(fVecOfScint_F[i]);
       } else {
+		  //singleBasket->SetBasketEnergy();
 		  sbVec.push_back(new SingleBasket(*singleBasket));
 		  basketTree->Fill();
 		  singleBasket->clear();
@@ -352,6 +357,48 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
   basketTree->Write();
   basketFile->Close();
   return sbVec;
+}
+
+std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLayers, std::vector<SingleBasket *> baskets)
+{
+  std::cout << "Going to Create Baskets with " << numVetoLayers << " veto layers" << std::endl;
+  SingleBasket *singleBasket = new SingleBasket();
+  std::vector<SingleBasket *> vsbVec;
+  
+  std::string outfileName = "VetoedBaskets_with_" + std::to_string(numVetoLayers) + "_VetoLayers_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
+  basketFile->cd();
+  TTree *basketTree = new TTree("basketTree", "basketTree");
+  basketTree->Branch("Baskets", "ismran::SingleBasket", &singleBasket);
+
+  ULong64_t tStart = baskets[0]->GetBasketStartTime();
+  unsigned int basketVecSize = baskets.size();
+  
+  std::vector<int> VetoBarsIndx = GetJacketBarIndx(numVetoLayers);
+  ushort barindex;
+  bool veto=false;
+  
+  for(uint i=0; i<basketVecSize;i++){
+	  std::cout<<"Basket Energy "<<baskets[i]->GetBasketEnergy()<<std::endl;
+	  singleBasket = baskets[i];
+	  std::cout<<"singleBasket Energy "<<singleBasket->GetBasketEnergy()<<" size "<< singleBasket->size() <<std::endl;
+	  singleBasket->SetBasketEnergy();
+	  std::cout<<"singleBasket Energy now "<<singleBasket->GetBasketEnergy()<<std::endl;
+	  for(unsigned int j=0; j<singleBasket->size(); j++){
+		  barindex = (singleBasket->GetBasket())[j]->GetBarIndex();
+		  veto = ismran::IsJacket(barindex, VetoBarsIndx);
+		  if(veto){break;}
+	  }
+	  if(!veto){
+		  vsbVec.push_back(new ismran::SingleBasket(*baskets[i]));
+		  basketTree->Fill();
+	  }
+	  singleBasket->clear();  
+  }
+  std::cout << "VetoedSBVec size : " << vsbVec.size() << std::endl;
+  basketTree->Write();
+  basketFile->Close();
+  return vsbVec;
 }
 
 std::vector<unsigned int> Analyzer_F::GetPeakPosVec(std::string peakPosFileLoc)

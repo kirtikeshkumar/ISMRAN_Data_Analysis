@@ -44,7 +44,7 @@ public:
   ULong64_t GetBasketStartTime();
   ULong64_t GetBasketEndTime();
   ULong64_t GetBasketDuration();
-  ULong64_t GetBasketEnergy();
+  Double_t GetBasketEnergy();
   void SetBasketEnergy();
   bool isBarInBasket(ushort barIndx);
   /*

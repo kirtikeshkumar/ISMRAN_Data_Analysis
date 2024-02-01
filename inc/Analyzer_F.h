@@ -11,6 +11,7 @@
 #include <iostream>
 #include <memory>
 #include "PairFinder.h"
+#include "HardwareNomenclature.h"
 namespace ismran {
 
 class ScintillatorBar_F;
@@ -36,6 +37,7 @@ public:
   std::vector<SingleMuonTrack*> ReconstructMuonTrack();
   std::vector<SingleBasket *> ReconstructBasket();
   std::vector<SingleBasket *> ReconstructBasket(uint basketdT);
+  std::vector<SingleBasket *> ReconstructVetoedBasket(uint numVetoLayer, std::vector<SingleBasket *> baskets);
   //std::vector<std::shared_ptr<SingleMuonTrack>> ReconstructMuonTrack();
   //std::vector<SingleMuonTrack *> ReconstructMuonTrack();
   unsigned int GetFileTime()const;
