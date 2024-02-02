@@ -60,6 +60,19 @@ namespace ismran
 	  fVecOfScintillators.push_back(scint); 
 	  BasketEnergy += scint->GetQMeanCorrected()/1000.0;
   }
+  
+  void SingleBasket::push_back(std::vector<ScintillatorBar_F *> vecOfScint) { 
+	  //Untested Functionality
+	  if(fVecOfScintillators.size()==0){
+		  fVecOfScintillators=vecOfScint;
+		  SetBasketEnergy();
+	  }else{
+		  for(int i=0;i<vecOfScint.size();i++){
+			  fVecOfScintillators.push_back(new ScintillatorBar_F(*vecOfScint[i])); 
+			  BasketEnergy += vecOfScint[i]->GetQMeanCorrected()/1000.0;
+		  }
+	  }
+  }
 
   void SingleBasket::Print()
   {

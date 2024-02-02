@@ -52,30 +52,10 @@ int main(int argc, char *argv[]){
 	}else{vecOfBaskets = an.ReconstructBasket();}
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
-	//if(argv[4]){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
-	//unsigned int vetoedbasketVecSize = vecOfBasketsPostVeto.size();
-	//std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
 	
-	//Implementing veto functionality
-	/*	if(argv[4]){
-		std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
-		ushort barindex;
-		bool veto=false;
-		int vetosz=0;
-		std::vector<ismran::ScintillatorBar_F *> basketscint;
-		for(int i=0; i<basketVecSize; i++){
-			basketscint = vecOfBaskets[i]->GetBasket();
-			for(int j=0; j<basketscint.size(); j++){
-				barindex = basketscint[j]->GetBarIndex();
-				veto=veto or ismran::IsJacket(barindex, VetoBarsIndx);
-			}
-			if(!veto){
-				vecOfBasketsPostVeto.push_back(new ismran::SingleBasket(*vecOfBaskets[i]));
-				basketscint.clear();
-				vetosz+=1;
-			}
-		}
-	}*/
+	if(argv[4]){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
+	unsigned int vetoedbasketVecSize = vecOfBasketsPostVeto.size();
+	std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
 	
 	//Generating plots
 	TCanvas *c1 = new TCanvas("c1","",20,10,800,600);
@@ -119,27 +99,12 @@ int main(int argc, char *argv[]){
 	HEUnVeto->SetLineColor(kGreen);
 	TH1* HEVeto = new TH1D("HEVeto", "", 301, 0, 1000);
 	HEVeto->SetLineColor(kRed);
+	for(int i=0; i<basketVecSize; i++){
+		HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
+	}
 	
-	if(argv[4]){
-		std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
-		ushort barindex;
-		bool veto=false;
-		std::vector<ismran::ScintillatorBar_F *> basketscint;
-		for(int i=0; i<basketVecSize; i++){
-			HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
-			basketscint = vecOfBaskets[i]->GetBasket();
-			for(int j=0; j<basketscint.size(); j++){
-				barindex = basketscint[j]->GetBarIndex();
-				veto=ismran::IsJacket(barindex, VetoBarsIndx);
-				if(veto){break;}
-			}
-			if(!veto){
-				//vecOfBasketsPostVeto.push_back(new ismran::SingleBasket(*vecOfBaskets[i]));
-				HEVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());				
-				basketscint.clear();
-			}
-			
-		}
+	for(int i=0; i<vetoedbasketVecSize; i++){
+		HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
 	}
 	
 	gPad->SetLogy();
@@ -160,46 +125,23 @@ int main(int argc, char *argv[]){
 	fApp->Run();
 	*/
 	
-	/*//For Time Difference
+	//For Time Difference
 	TH1* hTime = new TH1D("hTime", "", 401, 4.0, 12.0);
 	hTime->SetLineColor(kGreen);
 	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 401, 4.0, 12.0);
 	hTimeVeto->SetLineColor(kRed);
-	//std::cout<<"histograms created"<<std::endl;
+	std::cout<<"histograms created"<<std::endl;
+	std::cout<<vecOfBaskets.size()<<std::endl;
 	for(int i=0; i<basketVecSize-1; i++){
 		hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
 	}
-	//std::cout<<"histogram unveoed filled"<<std::endl;
+	std::cout<<"histogram hTime Filled"<<std::endl;
 	if(argv[4]){
-		std::vector<int> VetoBarsIndx = ismran::GetJacketBarIndx(numVetoLayers);
-		ushort barindex;
-		bool veto=false;
-		int vetosz=0;
-		std::vector<ismran::ScintillatorBar_F *> basketscint;
-		//std::cout<<"variables defined entering loops"<<std::endl;
-		for(unsigned int i=0; i<basketVecSize; i++){
-			//std::cout<<"retreiving basket "<<i<<std::endl;
-			basketscint = vecOfBaskets[i]->GetBasket();
-			//std::cout<<"retreived basket "<<i<<" with size "<<basketscint.size();
-			for(unsigned int j=0; j<basketscint.size(); j++){
-				barindex = basketscint[j]->GetBarIndex();
-				veto = ismran::IsJacket(barindex, VetoBarsIndx);
-				if(veto){break;}
-			}
-			//std::cout<<" and veto "<<veto<<std::endl;
-			if(!veto){
-				//std::cout<<"pushing into variable"<<std::endl;
-				vecOfBasketsPostVeto.push_back(new ismran::SingleBasket(*vecOfBaskets[i]));
-				vetosz+=1;
-				basketscint.clear();
-				if(vetosz>1){
-					hTimeVeto->Fill(log10(vecOfBasketsPostVeto[vetosz-1]->GetBasketStartTime()-vecOfBasketsPostVeto[vetosz-2]->GetBasketEndTime()));
-				}
-			}
+		for(int i=0; i<vetoedbasketVecSize-1; i++){
+			hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
 		}
-		std::cout<<"Baskets after veto= "<<vetosz<<std::endl;
+		std::cout<<"histogram hTimeVeto Filled"<<std::endl;
 	}
-	std::cout<<"Baskets after veto 12= "<<vecOfBasketsPostVeto.size()<<std::endl;
 	gPad->SetLogy();
 	hTime->GetXaxis()->SetTitle("log10(delT)");
     hTime->GetYaxis()->SetTitle("Counts");
@@ -210,7 +152,7 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
-    fApp->Run();*/
+    fApp->Run();
 }
 	
 

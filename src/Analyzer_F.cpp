@@ -379,11 +379,11 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLaye
   bool veto=false;
   
   for(uint i=0; i<basketVecSize;i++){
-	  std::cout<<"Basket Energy "<<baskets[i]->GetBasketEnergy()<<std::endl;
-	  singleBasket = baskets[i];
-	  std::cout<<"singleBasket Energy "<<singleBasket->GetBasketEnergy()<<" size "<< singleBasket->size() <<std::endl;
+	  //std::cout<<"Basket Energy "<<baskets[i]->GetBasketEnergy()<<std::endl;
+	  singleBasket = new SingleBasket(*baskets[i]);
+	  //std::cout<<"singleBasket Energy "<<singleBasket->GetBasketEnergy()<<" size "<< singleBasket->size() <<std::endl;
 	  singleBasket->SetBasketEnergy();
-	  std::cout<<"singleBasket Energy now "<<singleBasket->GetBasketEnergy()<<std::endl;
+	  //std::cout<<"singleBasket Energy now "<<singleBasket->GetBasketEnergy()<<std::endl;
 	  for(unsigned int j=0; j<singleBasket->size(); j++){
 		  barindex = (singleBasket->GetBasket())[j]->GetBarIndex();
 		  veto = ismran::IsJacket(barindex, VetoBarsIndx);

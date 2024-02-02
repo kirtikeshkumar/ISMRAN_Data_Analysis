@@ -33,6 +33,7 @@ public:
    * Function similar to std::vector
    */
   void push_back(ScintillatorBar_F *hittedBar);
+  void push_back(std::vector<ScintillatorBar_F *> vecOfScint);
   void clear();
   unsigned long int size();
 

@@ -187,7 +187,9 @@ std::vector<int> GetJacketBarIndx(ushort numLayers){
 		}
 	}
 	std::sort(vecOfJacketBars.begin(),vecOfJacketBars.end());
+	std::cout<<"veto Bars Index: ";
 	for(auto x:vecOfJacketBars){std::cout<<x<<" ";}
+	std::cout<<" "<<std::endl;
 	return vecOfJacketBars;
 }
 
