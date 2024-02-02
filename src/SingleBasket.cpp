@@ -99,9 +99,12 @@ namespace ismran
 	  BasketEnergy=0.0;
 	  for(int i=0; i < fVecOfScintillators.size(); i++){
 		  BasketEnergy += fVecOfScintillators[i]->GetQMeanCorrected()/1000.0;
-		  /*if(fVecOfScintillators[i]->GetQMeanCorrected()<=0.0){
-			  std::cout<<fVecOfScintillators[i]->GetBarIndex()<<"		"<<fVecOfScintillators[i]->GetQMean()<<std::endl;
-		  }*/
+		  if(fVecOfScintillators[i]->GetQMeanCorrected()<0.0){
+			  std::cout<<fVecOfScintillators[i]->GetBarIndex()<<"		"<<fVecOfScintillators[i]->GetQMean()<<"		"<<fVecOfScintillators[i]->GetQMeanCorrected()<<std::endl;
+		  }
+		  if(fVecOfScintillators[i]->GetQMean()==0.0){
+			  std::cout<<fVecOfScintillators[i]->GetBarIndex()<<"		"<<fVecOfScintillators[i]->GetQMean()<<"		"<<fVecOfScintillators[i]->GetQMeanCorrected()<<"	"<<fVecOfScintillators[i]->GetQNear()<<"	"<<fVecOfScintillators[i]->GetQFar()<<std::endl;
+		  }
 	  }
   }
 
