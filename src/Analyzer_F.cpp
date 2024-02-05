@@ -197,18 +197,29 @@ void Analyzer_F::LoadData(unsigned int numOfEvents)
   Long64_t startEvNo                     = (shotNo - 1) * numOfEventsInOneShot;
   Long64_t endEvNo                       = shotNo * numOfEventsInOneShot;
 
+  bool properev = true;
+  UInt_t badcounter=0;
   // for (Long64_t iev = 0; iev < nEntries; iev++) {
   for (Long64_t iev = startEvNo; iev < endEvNo; iev++) {
     // std::cout << "inside event loop......." << std::endl;
+    properev = true;
     nb += tr->GetEntry(iev);
     if (iev == 0) {
       fFileTime = fTime;
       std::cout << "FileTime : " << fFileTime << " : " << __FILE__ << std::endl;
     }
-
+    
+    unsigned short int maxU_16bits = USHRT_MAX;
+    UInt_t maskingVal              = maxU_16bits;
+    if((fQlong & maskingVal)==0 or (fQlong >> 16)==0){ //events where QFar or QNear is 0 must be neglected 
+		properev=false;
+		badcounter+=1;
+	}
+	
     if (0) std::cout << fBrCh << " , " << fQlong << " , " << fTstamp << " , " << fTime << " , " << fDelt << std::endl;
-
-    fVecOfScint_F.push_back(new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt));
+	if(properev){
+		fVecOfScint_F.push_back(new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt));
+	}
     //fVecOfScint_F.push_back(new ScintillatorBar_F(fBrCh, fQlong, fTstamp, fTime, fDelt));
 
 
@@ -220,7 +231,7 @@ void Analyzer_F::LoadData(unsigned int numOfEvents)
     }
 
   } //! event loop
-
+  std::cout<<"badcounter "<<badcounter<<std::endl;
   fp->Close();
 }
 #endif

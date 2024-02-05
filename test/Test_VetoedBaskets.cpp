@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
 	}
 	*/
 	
-	// For energy Spectra
+	/*// For energy Spectra
 	TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 1000);
 	HEUnVeto->SetLineColor(kGreen);
 	TH1* HEVeto = new TH1D("HEVeto", "", 301, 0, 1000);
@@ -123,9 +123,9 @@ int main(int argc, char *argv[]){
 	
 	c1->SaveAs(("../../Data_Analysis_Results/EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers"+fname+".root").c_str());
 	fApp->Run();
+	*/
 	
-	
-	/*//For Time Difference
+	//For Time Difference
 	TH1* hTime = new TH1D("hTime", "", 401, 4.0, 12.0);
 	hTime->SetLineColor(kGreen);
 	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 401, 4.0, 12.0);
@@ -152,7 +152,7 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
-    fApp->Run();*/
+    fApp->Run();
 }
 	
 

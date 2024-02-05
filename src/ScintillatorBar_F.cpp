@@ -38,7 +38,7 @@ ScintillatorBar_F::ScintillatorBar_F(ULong64_t evNo,ushort barIndex, UInt_t qlon
   UInt_t maskingVal              = maxU_16bits;
   fQfar                          = (fQlong & maskingVal);
   fQnear                         = (fQlong >> 16);
-  if(fQfar==0){std::cout<<"fQfar was zero, fQlong="<<fQlong<<std::endl;}
+  //if(fQfar==0){std::cout<<"fQfar was zero, fQlong="<<fQlong<<std::endl;}
 #ifdef DEB
   fBrCh = barIndex;
 #endif
@@ -51,7 +51,7 @@ ScintillatorBar_F::ScintillatorBar_F(ushort barIndex, UInt_t qlong, ULong64_t ts
   UInt_t maskingVal              = maxU_16bits;
   fQfar                          = (fQlong & maskingVal);
   fQnear                         = (fQlong >> 16);
-  if(fQfar==0){std::cout<<"fQfar was zero, fQlong="<<fQlong<<std::endl;}
+  //if(fQfar==0){std::cout<<"fQfar was zero, fQlong="<<fQlong<<std::endl;}
 #ifdef DEB
   fBrCh = barIndex;
 #endif
