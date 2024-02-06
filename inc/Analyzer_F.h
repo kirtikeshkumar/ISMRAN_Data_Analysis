@@ -17,6 +17,7 @@ namespace ismran {
 class ScintillatorBar_F;
 class SingleMuonTrack;
 class SingleBasket;
+class SingleAnimal;
 
 class Analyzer_F {
 
@@ -38,6 +39,7 @@ public:
   std::vector<SingleBasket *> ReconstructBasket();
   std::vector<SingleBasket *> ReconstructBasket(uint basketdT);
   std::vector<SingleBasket *> ReconstructVetoedBasket(uint numVetoLayer, std::vector<SingleBasket *> baskets);
+  std::vector<SingleAnimal *> ReconstructAnimal(std::vector<SingleBasket *> baskets);
   //std::vector<std::shared_ptr<SingleMuonTrack>> ReconstructMuonTrack();
   //std::vector<SingleMuonTrack *> ReconstructMuonTrack();
   unsigned int GetFileTime()const;

@@ -18,10 +18,13 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include <TApplication.h>
+#include <filesystem>
+namespace fs = std::filesystem;
 int main(int argc, char *argv[]){
 	std::cout<<"argc "<<argc<<std::endl;
 	TApplication *fApp       = new TApplication("TEST", NULL, NULL);
 	std::string dataFileName    = std::string(argv[1]);
+	fs::path calibFilePath		= std::string(argv[2]);
 	
 	unsigned int numOfEvts	= 0;	
 	ULong64_t fTStep 		= 1;											//step size to check number of baskets in ms
@@ -31,11 +34,15 @@ int main(int argc, char *argv[]){
 	unsigned int flagvar	= 0;
 	unsigned int prevflagvar= 0;
 	
-	if(argv[2]){std::sscanf(argv[2], "%lld", &fTStep); }
+	if(argv[3]){std::sscanf(argv[3], "%lld", &fTStep); }
 	std::cout<<"Time window: "<<fTStep<<"ms"<<std::endl;
 	
+	//Generating Calibration Instance
+	ismran::Calibration Calib;
+	Calib.instance(calibFilePath.string());
+	
 	ismran::Analyzer_F an(dataFileName, numOfEvts);											//read the events in file
-	std::vector<ismran::SingleBasket *> vecOfBaskets = an.ReconstructBasket(); 				//adds all Baskets into a vector
+	std::vector<ismran::SingleBasket *> vecOfBaskets = an.ReconstructBasket(20000); 				//adds all Baskets into a vector
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
 	fTStart		= vecOfBaskets[0]->GetBasketStartTime();
@@ -45,7 +52,7 @@ int main(int argc, char *argv[]){
 	
 	TCanvas *c1 = new TCanvas("c1","",20,10,800,600);
 	c1->cd(1);
-	TH1* HNumBasket  = new TH1I("HNumBasket", "", 301, 0, 300);				//Histrogram of number of baskets in fTStep
+	TH1* HNumBasket  = new TH1F("HNumBasket", "", 301, 0, 50);				//Histrogram of number of baskets in fTStep
 	HNumBasket->SetLineColor(kRed);
 		
 	for (unsigned int i = 0; i < basketVecSize; i++){
@@ -56,7 +63,7 @@ int main(int argc, char *argv[]){
 		else{																//10ms window changed
 			//std::cout<< "numofbaskets = "<<counter<<std::endl;
 			if(flagvar-prevflagvar==1){HNumBasket->Fill(counter);}			//fill the histogram with number of baskets
-			else{HNumBasket->Fill(0.1,(flagvar-prevflagvar-1));}			//some 10ms windows were empty, fill histogram with 0's
+			else{HNumBasket->Fill(0.0001,(flagvar-prevflagvar-1));}			//some 10ms windows were empty, fill histogram with 0's
 			prevflagvar=flagvar;												
 			counter=1;														//since the new basket has been read, reset the counter to 1
 		}
@@ -77,6 +84,6 @@ int main(int argc, char *argv[]){
 	std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
 	c1->SaveAs(("./NumBasket_"+std::to_string(fTStep)+"ms_"+fname+".root").c_str());
 	c1->SaveAs(("./NumBasket_"+std::to_string(fTStep)+"ms_"+fname+".pdf").c_str());
-	//fApp->Run();
+	fApp->Run();
 	
 }

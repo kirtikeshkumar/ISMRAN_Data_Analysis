@@ -10,6 +10,7 @@
 #include "Helpers_Dqm.h"
 #include "SingleMuonTrack.h"
 #include "SingleBasket.h"
+#include "SingleAnimal.h"
 #include "PairFinder.h"
 #include "TreeEntry.h"
 #include "colors.h"
@@ -309,8 +310,8 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
   singleBasket->push_back(fVecOfScint_F[0]);
   //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
   for (unsigned int i = 1; i < scintVecSize; i++) {
-      if (fVecOfScint_F[i]->GetTStampSmall() - singleBasket->GetBasketEndTime() < 20000) {
-        // 2 consecutive events within 20ns window
+      if (fVecOfScint_F[i]->GetTStampSmall() - singleBasket->GetBasketEndTime() < 50000) {
+        // 2 consecutive events within 50ns window
         singleBasket->push_back(fVecOfScint_F[i]);
         //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
       } else {
@@ -429,5 +430,14 @@ std::vector<ScintillatorBar_F *> Analyzer_F::GetVectorOfScintillators()
 {
   return fVecOfScint_F;
 }
+
+/*std::vector<SingleAnimal *> Analyzer_F::ReconstructAnimal(std::vector<SingleBasket *> baskets){
+	std::cout << "Going to Create Animals " << std::endl;
+	SingleBasket *singleBasket = new SingleBasket();
+	SingleAnimal *singleAnimal = new SingleAnimal();
+	std::vector<SingleAnimal *> saVec;
+	
+	
+}*/
 
 } // namespace ismran

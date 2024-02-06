@@ -59,41 +59,43 @@ int main(int argc, char *argv[]){
 	std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
 	
 	//Generating plots
-	TCanvas *c1 = new TCanvas("c1","",20,10,800,600);
+	TCanvas *c1 = new TCanvas("c1","",10,10,720,800);
 	c1->cd(1);
 	gStyle->SetPalette(kRainBow);	
 	
-	/*
-	// For 2d hits 
-	TH2I* H2D = new TH2I("H2D", "2D Hits", 9,0,9, 10,0,10); 
+	vecOfBaskets[6]->Print();
+	
+	/*// For 2d hits 
+	TH2* H2D = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10); 
 	std::vector<ismran::ScintillatorBar_F *> basketscint;
 	H2D->SetStats(0);
 	//char* histsavename="../Plots/Basket"
 	
 	ushort indxb;
-	Double_t levels[201];
+	Double_t levels[501];
 	for(int i=0;i<sizeof(levels)/sizeof(levels[0]);i++){
-		levels[i]=i*0.50;
+		levels[i]=i*0.1;
 	} 
 	for(int i=0; i<vecOfBaskets.size(); i++){
 		if(vecOfBaskets[i]->size()>=2){
 			basketscint = vecOfBaskets[i]->GetBasket();
 			for(int j=0;j<basketscint.size();j++){
 				indxb = basketscint[j]->GetBarIndex();
-				H2D->Fill(indxb/10+0.5,indxb%10+0.5,vecOfBaskets[i]->GetBasketEnergy());
+				H2D->Fill(indxb/10+0.5,indxb%10+0.5,vecOfBaskets[i]->GetBasketBarEnergy(j));
 			}
 			//break;
 			H2D->GetXaxis()->SetTitle("X");
 			H2D->GetYaxis()->SetTitle("Y");
 			H2D->SetContour(sizeof(levels)/sizeof(levels[0]),levels);
 			//H2D->Draw("ARR");
-			H2D->Draw("colz");		
+			H2D->Draw("colz");
+			//H2D->Draw("TEXT");		
 			c1->SaveAs(("../Plots/Basket"+std::to_string(i)+".jpg").c_str());
 		}
 		c1->Clear();
 		H2D->Reset();
-	}
-	*/
+	}*/
+	
 	
 	// For energy Spectra
 	/*TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 1000);
@@ -139,16 +141,16 @@ int main(int argc, char *argv[]){
 	*/
 	
 	//For Time Difference
-	/*TH1* hTime = new TH1D("hTime", "", 401, 4.0, 12.0);
+	/*TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
 	hTime->SetLineColor(kGreen);
-	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 401, 4.0, 12.0);
+	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12.0);
 	hTimeVeto->SetLineColor(kRed);
 	std::cout<<"histograms created"<<std::endl;
 	std::cout<<vecOfBaskets.size()<<std::endl;
 	for(int i=0; i<basketVecSize-1; i++){
-		if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and vecOfBaskets[i]->GetBasketEnergy()<10.0){
+		//if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and vecOfBaskets[i]->GetBasketEnergy()<10.0){
 			hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
-		}
+		//}
 	}
 	std::cout<<"histogram hTime Filled"<<std::endl;
 	if(argc==5){

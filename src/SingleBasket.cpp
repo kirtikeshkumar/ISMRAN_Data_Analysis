@@ -107,6 +107,9 @@ namespace ismran
 		  }*/
 	  }
   }
+  Double_t SingleBasket::GetBasketBarEnergy(int evtIndx){
+	  return fVecOfScintillators[evtIndx]->GetQMeanCorrected()/1000.0;
+  }
 
   bool SingleBasket::isBarInBasket(ushort barIndx){
 	  bool isbar = false;
