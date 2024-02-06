@@ -7,6 +7,7 @@
 #include "Helpers.h"
 #include "SingleMuonTrack.h"
 #include "SingleBasket.h"
+#include "SingleAnimal.h"
 #include <iostream>
 #include <vector>
 #include <string>

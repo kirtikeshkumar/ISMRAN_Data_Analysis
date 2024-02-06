@@ -90,7 +90,7 @@ add_subdirectory(Characterization)
 
 include_directories(${PROJECT_SOURCE_DIR}/inc)
 
-ROOT_GENERATE_DICTIONARY(G__IsmranAnalysis inc/ScintillatorBar_F.h inc/SingleMuonTrack.h inc/SingleBasket.h inc/MuonPeakAnalyzer.h LINKDEF inc/DictLinkDef.h)
+ROOT_GENERATE_DICTIONARY(G__IsmranAnalysis inc/ScintillatorBar_F.h inc/SingleMuonTrack.h inc/SingleBasket.h inc/SingleAnimal.h inc/MuonPeakAnalyzer.h LINKDEF inc/DictLinkDef.h)
 file(GLOB analysisSources ${PROJECT_SOURCE_DIR}/src/*.cpp) 
 add_library(Analysis SHARED ${analysisSources} G__IsmranAnalysis.cxx)
 target_link_libraries(Analysis ${ROOT_LIBRARIES})

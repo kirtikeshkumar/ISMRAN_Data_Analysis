@@ -37,6 +37,7 @@ int main(int argc, char *argv[]){
 																		//if basketdT = 0, baskets are made based on time difference between events
 	if(argv[3]){std::sscanf(argv[3], "%d", &basketdT); }
 	if(argv[4]){std::sscanf(argv[4], "%hd", &numVetoLayers); }
+
 	
 	//Generating Calibration Instance
 	ismran::Calibration Calib;
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]){
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
 	
-	if(argv[4]){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
+	if(argc==5){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
 	unsigned int vetoedbasketVecSize = vecOfBasketsPostVeto.size();
 	std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
 	
@@ -94,17 +95,29 @@ int main(int argc, char *argv[]){
 	}
 	*/
 	
-	/*// For energy Spectra
-	TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 1000);
+	// For energy Spectra
+	/*TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 1000);
 	HEUnVeto->SetLineColor(kGreen);
 	TH1* HEVeto = new TH1D("HEVeto", "", 301, 0, 1000);
 	HEVeto->SetLineColor(kRed);
-	for(int i=0; i<basketVecSize; i++){
-		HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
+	unsigned int vetobasketcounter=0;
+	ULong64_t delTBaskets;
+	for(int i=0; i<basketVecSize-1; i++){
+		delTBaskets = vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime();
+		if(log10(delTBaskets)>=5.2 and log10(delTBaskets)<=6.6){
+			HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
+		}
+		if(log10(delTBaskets)>=4.0 and log10(delTBaskets)<=4.5){
+			HEVeto->Fill(vecOfBaskets[i+1]->GetBasketEnergy());
+		}
 	}
 	
-	for(int i=0; i<vetoedbasketVecSize; i++){
-		HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
+	for(int i=0; i<vetoedbasketVecSize-1; i++){
+		delTBaskets = vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime();
+		if(log10(delTBaskets)>=5.2 and log10(delTBaskets)<=6.6){
+			HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
+		}
+		//HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
 	}
 	
 	gPad->SetLogy();
@@ -113,7 +126,7 @@ int main(int argc, char *argv[]){
     HEUnVeto->GetXaxis()->SetTitle("Energy(MeV)");
     HEUnVeto->GetYaxis()->SetTitle("Counts");
     HEUnVeto->Draw("C");
-    HEVeto->Draw("SAME");
+    HEVeto->Draw("LSAME");
     TLegend *leg = new TLegend(0.6,0.7,0.75,0.85);
     leg->SetBorderSize(0);
     leg->AddEntry(HEUnVeto,"Total Energy Spectra","l");
@@ -126,17 +139,19 @@ int main(int argc, char *argv[]){
 	*/
 	
 	//For Time Difference
-	TH1* hTime = new TH1D("hTime", "", 401, 4.0, 12.0);
+	/*TH1* hTime = new TH1D("hTime", "", 401, 4.0, 12.0);
 	hTime->SetLineColor(kGreen);
 	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 401, 4.0, 12.0);
 	hTimeVeto->SetLineColor(kRed);
 	std::cout<<"histograms created"<<std::endl;
 	std::cout<<vecOfBaskets.size()<<std::endl;
 	for(int i=0; i<basketVecSize-1; i++){
-		hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
+		if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and vecOfBaskets[i]->GetBasketEnergy()<10.0){
+			hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
+		}
 	}
 	std::cout<<"histogram hTime Filled"<<std::endl;
-	if(argv[4]){
+	if(argc==5){
 		for(int i=0; i<vetoedbasketVecSize-1; i++){
 			hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
 		}
@@ -152,7 +167,7 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
-    fApp->Run();
+    fApp->Run();*/
 }
 	
 
