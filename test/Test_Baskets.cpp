@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
 	Calib.instance(calibFilePath.string());
 	
 	ismran::Analyzer_F an(dataFileName, numOfEvts);											//read the events in file
-	std::vector<ismran::SingleBasket *> vecOfBaskets = an.ReconstructBasket(20000); 				//adds all Baskets into a vector
+	std::vector<ismran::SingleBasket *> vecOfBaskets = an.ReconstructBasket(50000); 				//adds all Baskets into a vector
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
 	fTStart		= vecOfBaskets[0]->GetBasketStartTime();

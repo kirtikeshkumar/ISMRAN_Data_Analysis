@@ -63,7 +63,9 @@ int main(int argc, char *argv[]){
 	c1->cd(1);
 	gStyle->SetPalette(kRainBow);	
 	
-	vecOfBaskets[6]->Print();
+	vecOfBaskets[0]->Print();
+	vecOfBaskets[0]->SetBasketParameters();
+	vecOfBaskets[0]->Print();
 	
 	/*// For 2d hits 
 	TH2* H2D = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10); 

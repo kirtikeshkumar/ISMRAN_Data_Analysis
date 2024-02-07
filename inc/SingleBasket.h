@@ -21,6 +21,11 @@ class SingleBasket {
 private:
   std::vector<ScintillatorBar_F*> fVecOfScintillators;
   Double_t BasketEnergy;
+  ushort COMIndex;
+  ULong64_t meanT;
+  Double_t sigX;
+  Double_t sigY;
+  uint sigT;
 public:
   /*
    * Various constructors
@@ -45,14 +50,25 @@ public:
   ULong64_t GetBasketStartTime();
   ULong64_t GetBasketEndTime();
   ULong64_t GetBasketDuration();
+  ULong64_t GetBasketMeanTime();
+  uint GetBasketStdDevT();
+  Double_t GetBasketStdDevX();
+  Double_t GetBasketStdDevY();
+  ushort GetBasketCOMBar();
   Double_t GetBasketEnergy();
   Double_t GetBasketBarEnergy(int evtIndx);
-  void SetBasketEnergy();
   bool isBarInBasket(ushort barIndx);
   /*
    * Print functions
    */
   void Print();
+  /*
+   * Setters
+   */
+   void SetBasketEnergy();
+   void SetBasketEnergy(Double_t E);
+   void SetBasketParameters();
+   void Initialiser();
 
   ~SingleBasket();
 

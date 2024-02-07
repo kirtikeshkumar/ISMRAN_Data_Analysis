@@ -315,7 +315,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
         singleBasket->push_back(fVecOfScint_F[i]);
         //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
       } else {
-		  singleBasket->SetBasketEnergy();
+		  singleBasket->SetBasketParameters();
 		  //std::cout<<"				Basket Energy Is "<<singleBasket->GetBasketEnergy()<<std::endl;
 		  sbVec.push_back(new SingleBasket(*singleBasket));
 		  basketTree->Fill();
@@ -356,8 +356,10 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
         // Within basketdT window
         singleBasket->push_back(fVecOfScint_F[i]);
       } else {
-		  //singleBasket->SetBasketEnergy();
+		  //singleBasket->SetBasketParameters();
+		  if(sbVec.size()==0){singleBasket->Print();}
 		  sbVec.push_back(new SingleBasket(*singleBasket));
+		  if(sbVec.size()==1){sbVec[0]->Print();}
 		  basketTree->Fill();
 		  singleBasket->clear();
           singleBasket->push_back(fVecOfScint_F[i]);
@@ -368,6 +370,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
   std::cout << "SBVec size : " << sbVec.size() << std::endl;
   basketTree->Write();
   basketFile->Close();
+  sbVec[0]->Print();
   return sbVec;
 }
 
