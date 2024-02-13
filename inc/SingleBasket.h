@@ -21,11 +21,11 @@ class SingleBasket {
 private:
   std::vector<ScintillatorBar_F*> fVecOfScintillators;
   Double_t BasketEnergy;
-  ushort COMIndex;
-  ULong64_t meanT;
-  Double_t sigX;
-  Double_t sigY;
-  uint sigT;
+  ushort COMIndex;	//Index of Center Of Mass bar
+  ULong64_t meanT;	//Average time of basket
+  Double_t sigX;	//Stdev of basket spread in x direction
+  Double_t sigY;	//Stdev of basket spread in y direction
+  uint sigT;		//Stdev of basket spread in time
 public:
   /*
    * Various constructors

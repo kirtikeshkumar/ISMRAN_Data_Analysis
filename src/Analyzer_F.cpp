@@ -198,12 +198,12 @@ void Analyzer_F::LoadData(unsigned int numOfEvents)
   Long64_t startEvNo                     = (shotNo - 1) * numOfEventsInOneShot;
   Long64_t endEvNo                       = shotNo * numOfEventsInOneShot;
 
-  bool properev = true;
+  //bool properev = true;
   UInt_t badcounter=0;
   // for (Long64_t iev = 0; iev < nEntries; iev++) {
   for (Long64_t iev = startEvNo; iev < endEvNo; iev++) {
     // std::cout << "inside event loop......." << std::endl;
-    properev = true;
+    //properev = true;
     nb += tr->GetEntry(iev);
     if (iev == 0) {
       fFileTime = fTime;
@@ -213,14 +213,14 @@ void Analyzer_F::LoadData(unsigned int numOfEvents)
     unsigned short int maxU_16bits = USHRT_MAX;
     UInt_t maskingVal              = maxU_16bits;
     if((fQlong & maskingVal)==0 or (fQlong >> 16)==0){ //events where QFar or QNear is 0 must be neglected 
-		properev=false;
+		//properev=false;
 		badcounter+=1;
 	}
 	
     if (0) std::cout << fBrCh << " , " << fQlong << " , " << fTstamp << " , " << fTime << " , " << fDelt << std::endl;
-	if(properev){
-		fVecOfScint_F.push_back(new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt));
-	}
+	//if(properev){
+	fVecOfScint_F.push_back(new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt));
+	//}
     //fVecOfScint_F.push_back(new ScintillatorBar_F(fBrCh, fQlong, fTstamp, fTime, fDelt));
 
 
@@ -309,17 +309,28 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
   double_t delt=0;
   singleBasket->push_back(fVecOfScint_F[0]);
   //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
+  bool properev = true;
+  UInt_t badcounter=0;
+  unsigned short int maxU_16bits = USHRT_MAX;
+  UInt_t maskingVal              = maxU_16bits;
   for (unsigned int i = 1; i < scintVecSize; i++) {
       if (fVecOfScint_F[i]->GetTStampSmall() - singleBasket->GetBasketEndTime() < 50000) {
         // 2 consecutive events within 50ns window
         singleBasket->push_back(fVecOfScint_F[i]);
+        if(fVecOfScint_F[i]->GetQFar()==0 or fVecOfScint_F[i]->GetQNear()==0){ //events where QFar or QNear is 0 must be neglected 
+			properev=false;
+			badcounter+=1;
+		}
         //std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
       } else {
-		  singleBasket->SetBasketParameters();
+		  if(properev){
+			  sbVec.push_back(new SingleBasket(*singleBasket));
+			  basketTree->Fill();
+		  }
+		  //singleBasket->SetBasketParameters();
 		  //std::cout<<"				Basket Energy Is "<<singleBasket->GetBasketEnergy()<<std::endl;
-		  sbVec.push_back(new SingleBasket(*singleBasket));
-		  basketTree->Fill();
 		  singleBasket->clear();
+		  properev=true;
 		  //std::cout<<"________________________________________________________"<<std::endl;
           singleBasket->push_back(fVecOfScint_F[i]);
           tStart = fVecOfScint_F[i]->GetTStampSmall();
@@ -350,29 +361,89 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
 
   ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
   double_t delt=0;
+  bool properev = true;
+  UInt_t badcounter=0;
+  ULong64_t prevbasketendtime = 0;
   for (unsigned int i = 0; i < scintVecSize; i++) {
 	  //std::cout<<tStart<<"	"<<fVecOfScint_F[i]->GetTStampAverage()<<"	"<<fVecOfScint_F[i]->GetTStampAverage() - tStart<<std::endl;
       if (fVecOfScint_F[i]->GetTStampSmall() - tStart < basketdT) {
         // Within basketdT window
         singleBasket->push_back(fVecOfScint_F[i]);
+        if(fVecOfScint_F[i]->GetQFar()==0 or fVecOfScint_F[i]->GetQNear()==0){ //events where QFar or QNear is 0 must be neglected 
+			properev=false;
+			badcounter+=1;
+		}
       } else {
-		  //singleBasket->SetBasketParameters();
-		  if(sbVec.size()==0){singleBasket->Print();}
-		  sbVec.push_back(new SingleBasket(*singleBasket));
-		  if(sbVec.size()==1){sbVec[0]->Print();}
-		  basketTree->Fill();
+		  if(properev){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
+			  sbVec.push_back(new SingleBasket(*singleBasket));
+			  basketTree->Fill();
+		  }
+		  prevbasketendtime = fVecOfScint_F[i-1]->GetTStampSmall();
 		  singleBasket->clear();
+		  properev=true;
           singleBasket->push_back(fVecOfScint_F[i]);
           tStart = fVecOfScint_F[i]->GetTStampSmall();
       }
  //   }
   }
   std::cout << "SBVec size : " << sbVec.size() << std::endl;
+  std::cout<<"badcounter : "<<badcounter<<std::endl;
   basketTree->Write();
   basketFile->Close();
   sbVec[0]->Print();
   return sbVec;
 }
+
+/*std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
+{
+  uint basketdt = 50000;
+  std::cout << "Going to Create Baskets with Rolling Lookup" << std::endl;
+  std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(), CompareTimestampScintillator);
+  unsigned int scintVecSize = fVecOfScint_F.size();
+  std::cout << "ScintVectSize : " << scintVecSize << std::endl;
+  SingleBasket *singleBasket = new SingleBasket();
+  std::vector<SingleBasket *> sbVec;
+  
+  std::string outfileName = "Baskets_Rolling_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
+  basketFile->cd();
+  TTree *basketTree = new TTree("basketTree", "basketTree");
+  basketTree->Branch("Baskets", "ismran::SingleBasket", &singleBasket);
+
+  ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
+  double_t delt=0;
+  bool properev = true;
+  UInt_t badcounter=0;
+  ULong64_t prevbasketendtime = 0;
+  for (unsigned int i = 0; i < scintVecSize; i++) {
+	  //std::cout<<tStart<<"	"<<fVecOfScint_F[i]->GetTStampAverage()<<"	"<<fVecOfScint_F[i]->GetTStampAverage() - tStart<<std::endl;
+      if (fVecOfScint_F[i]->GetTStampSmall() - tStart < basketdT) {
+        // Within basketdT window
+        singleBasket->push_back(fVecOfScint_F[i]);
+        if(fVecOfScint_F[i]->GetQFar()==0 or fVecOfScint_F[i]->GetQNear()==0){ //events where QFar or QNear is 0 must be neglected 
+			properev=false;
+			badcounter+=1;
+		}
+      } else {
+		  if(properev){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
+			  sbVec.push_back(new SingleBasket(*singleBasket));
+			  basketTree->Fill();
+		  }
+		  prevbasketendtime = fVecOfScint_F[i-1]->GetTStampSmall();
+		  singleBasket->clear();
+		  properev=true;
+          singleBasket->push_back(fVecOfScint_F[i]);
+          tStart = fVecOfScint_F[i]->GetTStampSmall();
+      }
+ //   }
+  }
+  std::cout << "SBVec size : " << sbVec.size() << std::endl;
+  std::cout<<"badcounter : "<<badcounter<<std::endl;
+  basketTree->Write();
+  basketFile->Close();
+  sbVec[0]->Print();
+  return sbVec;
+}*/
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLayers, std::vector<SingleBasket *> baskets)
 {

@@ -63,12 +63,11 @@ int main(int argc, char *argv[]){
 	c1->cd(1);
 	gStyle->SetPalette(kRainBow);	
 	
-	vecOfBaskets[0]->Print();
-	vecOfBaskets[0]->SetBasketParameters();
-	vecOfBaskets[0]->Print();
 	
-	/*// For 2d hits 
-	TH2* H2D = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10); 
+	//vecOfBaskets[52]->Print();
+	
+	// For 2d hits 
+	/*TH2* H2D = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10); 
 	std::vector<ismran::ScintillatorBar_F *> basketscint;
 	H2D->SetStats(0);
 	//char* histsavename="../Plots/Basket"
@@ -143,7 +142,7 @@ int main(int argc, char *argv[]){
 	*/
 	
 	//For Time Difference
-	/*TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
+	TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
 	hTime->SetLineColor(kGreen);
 	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12.0);
 	hTimeVeto->SetLineColor(kRed);
@@ -171,6 +170,17 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
+    fApp->Run();
+    
+    /*//For Basket Duration
+    TH1* BDelt = new TH1D("BDelt", "", 51, 0, 50);
+	BDelt->SetLineColor(kGreen);
+	for(int i=0; i<basketVecSize-1; i++){
+		BDelt->Fill(vecOfBaskets[i]->GetBasketDuration()/1000/vecOfBaskets[i]->size());
+	}
+	BDelt->GetXaxis()->SetTitle("Basket Duration (ns)");
+    BDelt->GetYaxis()->SetTitle("Counts");
+    BDelt->Draw("C");
     fApp->Run();*/
 }
 	
