@@ -291,7 +291,7 @@ std::vector<SingleMuonTrack *> Analyzer_F::ReconstructMuonTrack()
   return smtVec;
 }
 
-std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
+/*std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
 {
   std::cout << "Going to Create Baskets based on delT between events" << std::endl;
   std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(), CompareTimestampScintillator);
@@ -342,7 +342,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
   basketTree->Write();
   basketFile->Close();
   return sbVec;
-}
+}*/
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
 {
@@ -374,10 +374,12 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
 			badcounter+=1;
 		}
       } else {
+		  //if(sbVec.size()==9){singleBasket->Print();}
 		  if(properev){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
 			  sbVec.push_back(new SingleBasket(*singleBasket));
 			  basketTree->Fill();
 		  }
+		  //if(sbVec.size()==10){sbVec[9]->Print();}
 		  prevbasketendtime = fVecOfScint_F[i-1]->GetTStampSmall();
 		  singleBasket->clear();
 		  properev=true;
@@ -390,11 +392,11 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
   std::cout<<"badcounter : "<<badcounter<<std::endl;
   basketTree->Write();
   basketFile->Close();
-  sbVec[0]->Print();
+  //sbVec[0]->Print();
   return sbVec;
 }
 
-/*std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
+std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
 {
   uint basketdt = 50000;
   std::cout << "Going to Create Baskets with Rolling Lookup" << std::endl;
@@ -402,48 +404,113 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
   unsigned int scintVecSize = fVecOfScint_F.size();
   std::cout << "ScintVectSize : " << scintVecSize << std::endl;
   SingleBasket *singleBasket = new SingleBasket();
+  SingleBasket *finalBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
-  
+  std::cout<<"Creafting files"<<std::endl;
   std::string outfileName = "Baskets_Rolling_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
+  std::cout<<"created files"<<std::endl;
   TTree *basketTree = new TTree("basketTree", "basketTree");
-  basketTree->Branch("Baskets", "ismran::SingleBasket", &singleBasket);
-
+  basketTree->Branch("Baskets", "ismran::SingleBasket", &finalBasket);
+  std::cout<<"defined files"<<std::endl;
   ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
+  std::cout<<"tStart: "<<tStart<<std::endl;
   double_t delt=0;
   bool properev = true;
   UInt_t badcounter=0;
-  ULong64_t prevbasketendtime = 0;
+  uint compval;
+  uint uniT;
+  uint sigt;
+  //ULong64_t prevbasketendtime = 0;
+  std::cout<<"now starting"<<std::endl;
   for (unsigned int i = 0; i < scintVecSize; i++) {
+	  std::cout<<"___________________________________________________________________________________________________________________________________"<<std::endl;
+	  std::cout<<"NOW LOOKING AT SCINT: "<<i<<std::endl;
 	  //std::cout<<tStart<<"	"<<fVecOfScint_F[i]->GetTStampAverage()<<"	"<<fVecOfScint_F[i]->GetTStampAverage() - tStart<<std::endl;
-      if (fVecOfScint_F[i]->GetTStampSmall() - tStart < basketdT) {
+      if (fVecOfScint_F[i]->GetTStampSmall() - tStart < basketdt) {
         // Within basketdT window
         singleBasket->push_back(fVecOfScint_F[i]);
-        if(fVecOfScint_F[i]->GetQFar()==0 or fVecOfScint_F[i]->GetQNear()==0){ //events where QFar or QNear is 0 must be neglected 
+        /*if(fVecOfScint_F[i]->GetQFar()==0 or fVecOfScint_F[i]->GetQNear()==0){ //events where QFar or QNear is 0 must be neglected 
 			properev=false;
 			badcounter+=1;
-		}
-      } else {
-		  if(properev){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
-			  sbVec.push_back(new SingleBasket(*singleBasket));
+		}*/
+		std::cout<<"Passed Stage 1"<<std::endl;
+      }else{
+		  std::cout<<"Entered Stage 2"<<std::endl;
+		  if(singleBasket->size() ==1){
+			  std::cout<<"Entered Stage 2_1"<<std::endl;
+			  finalBasket = new SingleBasket(*singleBasket);
+		      sbVec.push_back(new SingleBasket(*finalBasket));
 			  basketTree->Fill();
-		  }
-		  prevbasketendtime = fVecOfScint_F[i-1]->GetTStampSmall();
+			  std::cout<<"Exited Stage 2_1"<<std::endl;
+		  }else{
+			  std::cout<<"Entered Stage 2_2"<<std::endl;
+			  //singleBasket->SetBasketMeanTime();
+			  singleBasket->SetBasketStdDevT();
+			  uniT = basketdt/singleBasket->size(); //separation between poisson/uniform distributed events
+			  sigt = singleBasket->GetBasketStdDevT();
+			  compval = std::max(uniT,4*sigt/singleBasket->size());
+			  std::cout<<"defined compval"<<std::endl;
+			  //compval = std::min(uniT,4*sigt/singleBasket->size());
+			  finalBasket->push_back(new ScintillatorBar_F(*singleBasket->GetEvent(0)));
+			  if(singleBasket->GetEvent(0)->GetQFar()==0 or singleBasket->GetEvent(0)->GetQNear()==0){properev = false;}
+			  std::cout<<"filled first event"<<std::endl;
+			  for(uint j = 1 ; j < singleBasket->size() ; j++){
+				  std::cout<<"basket size "<<singleBasket->size()<<std::endl;
+				  if((singleBasket->GetBasketEventTime(j)-finalBasket->GetBasketEndTime()) <= 1.0*compval){		//this can allow for more stringent cuts
+					  if(singleBasket->GetEvent(j)->GetQFar()==0 or singleBasket->GetEvent(j)->GetQNear()==0){properev = false;}
+					  std::cout<<"Adding event "<<j+1<<" of basket "<<sbVec.size()+1<<std::endl;
+					  finalBasket->push_back(new ScintillatorBar_F(*singleBasket->GetEvent(j)));
+					  std::cout<<"Added event "<<j+1<<" of basket "<<sbVec.size()+1<<std::endl;
+				  }else{
+					  if(properev){
+						  std::cout<<"Adding basket"<<sbVec.size() + 1<<std::endl;
+						  sbVec.push_back(new SingleBasket(*finalBasket));
+						  basketTree->Fill();
+						  std::cout<<"Added basket"<<sbVec.size()<<std::endl;
+					  }
+					  i=i+j-singleBasket->size();
+					  if(fVecOfScint_F[i]->GetTStampSmall()==finalBasket->GetBasketEndTime()){std::cout<<"error overlapping baskets"<<std::endl;}
+					  break;
+				  }
+				  if(j==singleBasket->size()-1 and properev){
+					  std::cout<<"Adding basket end"<<sbVec.size() + 1<<std::endl;
+					  sbVec.push_back(new SingleBasket(*finalBasket));
+					  basketTree->Fill();
+					  std::cout<<"Added basket end"<<sbVec.size()<<std::endl;
+				  }
+				  //std::cout<<"Going for event "<<j+1<<" of basket"<<sbVec.size()<<" of size "<<singleBasket->size()<<std::endl;
+			  }
+		  }	
+		  //prevbasketendtime = fVecOfScint_F[i-1]->GetTStampSmall();
+		  singleBasket->Print();
+		  finalBasket->Print();
+		  sbVec[sbVec.size()-1]->Print();
+		  std::cout<<"*********************************"<<std::endl;
+		  std::cout<<"clearing basket "<<sbVec.size()<<std::endl;
 		  singleBasket->clear();
+		  std::cout<<"*********************************"<<std::endl;
+		  finalBasket->Print();
+		  std::cout<<"clearing final basket "<<sbVec.size()<<" of size "<<finalBasket->size()<<std::endl;
+		  if(finalBasket){finalBasket->clear();}
+		  std::cout<<"setting properev "<<sbVec.size()<<std::endl;
 		  properev=true;
+		  std::cout<<"pushback "<<i<<std::endl;
+		  fVecOfScint_F[i]->Print();
           singleBasket->push_back(fVecOfScint_F[i]);
           tStart = fVecOfScint_F[i]->GetTStampSmall();
+          std::cout<<"Passed Stage 2"<<std::endl;
       }
- //   }
   }
   std::cout << "SBVec size : " << sbVec.size() << std::endl;
   std::cout<<"badcounter : "<<badcounter<<std::endl;
   basketTree->Write();
   basketFile->Close();
   sbVec[0]->Print();
+  
   return sbVec;
-}*/
+}
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLayers, std::vector<SingleBasket *> baskets)
 {

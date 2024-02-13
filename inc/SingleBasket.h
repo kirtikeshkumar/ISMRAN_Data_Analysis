@@ -12,6 +12,10 @@
 #include <vector>
 #pragma once
 #include <TROOT.h>
+#include <TMath.h>
+#include <algorithm>  
+#include <numeric>    
+#include <cmath>
 
 namespace ismran {
 
@@ -40,12 +44,13 @@ public:
   void push_back(ScintillatorBar_F *hittedBar);
   void push_back(std::vector<ScintillatorBar_F *> vecOfScint);
   void clear();
-  unsigned long int size();
+  uint size();
 
   /*
    * Required Getters
    */
   std::vector<ScintillatorBar_F*> GetBasket() const;
+  ScintillatorBar_F* GetEvent(int EvtIndx);
   ULong64_t GetBasketEventTime(int EvtIndx);
   ULong64_t GetBasketStartTime();
   ULong64_t GetBasketEndTime();
@@ -68,6 +73,10 @@ public:
    void SetBasketEnergy();
    void SetBasketEnergy(Double_t E);
    void SetBasketParameters();
+   void SetBasketMeanTime();
+   void SetBasketStdDevT();
+   //void SetBasketMeanTime(ULong64_t val);
+   //void SetBasketStdDevT(uint val);
    void Initialiser();
 
   ~SingleBasket();

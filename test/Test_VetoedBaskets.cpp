@@ -64,7 +64,13 @@ int main(int argc, char *argv[]){
 	gStyle->SetPalette(kRainBow);	
 	
 	
-	//vecOfBaskets[52]->Print();
+	/*vecOfBaskets[21]->Print();
+	vecOfBaskets[21]->SetBasketStdDevT(0);
+	vecOfBaskets[21]->SetBasketMeanTime(0);
+	vecOfBaskets[21]->Print();
+	vecOfBaskets[21]->SetBasketMeanTime();
+	vecOfBaskets[21]->SetBasketStdDevT();
+	vecOfBaskets[21]->Print();*/
 	
 	// For 2d hits 
 	/*TH2* H2D = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10); 
@@ -142,7 +148,7 @@ int main(int argc, char *argv[]){
 	*/
 	
 	//For Time Difference
-	TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
+	/*TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
 	hTime->SetLineColor(kGreen);
 	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12.0);
 	hTimeVeto->SetLineColor(kRed);
@@ -170,7 +176,7 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
-    fApp->Run();
+    fApp->Run();*/
     
     /*//For Basket Duration
     TH1* BDelt = new TH1D("BDelt", "", 51, 0, 50);
