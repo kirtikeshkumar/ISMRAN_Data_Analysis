@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
 	Calib.instance(calibFilePath.string());
 	
 	//Reading and sorting events from file
-	unsigned int numOfEvts	= 0;
+	unsigned int numOfEvts	= 0;//10000000;
 	ismran::Analyzer_F an(dataFileName, numOfEvts);						//read the events in file
 	std::vector<ismran::SingleBasket *> vecOfBaskets;	
 	std::vector<ismran::SingleBasket *> vecOfBasketsPostVeto;	
@@ -105,29 +105,29 @@ int main(int argc, char *argv[]){
 	
 	
 	// For energy Spectra
-	/*TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 1000);
+	/*TH1* HEUnVeto = new TH1D("HEUnVeto", "", 301, 0, 10);
 	HEUnVeto->SetLineColor(kGreen);
-	TH1* HEVeto = new TH1D("HEVeto", "", 301, 0, 1000);
+	TH1* HEVeto = new TH1D("HEVeto", "", 301, 0, 10);
 	HEVeto->SetLineColor(kRed);
 	unsigned int vetobasketcounter=0;
 	ULong64_t delTBaskets;
 	for(int i=0; i<basketVecSize-1; i++){
-		delTBaskets = vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime();
-		if(log10(delTBaskets)>=5.2 and log10(delTBaskets)<=6.6){
+		//delTBaskets = vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime();
+		//if(log10(delTBaskets)>=5.2 and log10(delTBaskets)<=6.6){
 			HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
-		}
-		if(log10(delTBaskets)>=4.0 and log10(delTBaskets)<=4.5){
-			HEVeto->Fill(vecOfBaskets[i+1]->GetBasketEnergy());
-		}
+		//}
+		//if(log10(delTBaskets)>=2.5 and log10(delTBaskets)<=5.0){
+		//	HEVeto->Fill(vecOfBaskets[i+1]->GetBasketEnergy());
+		//}
 	}
 	
-	for(int i=0; i<vetoedbasketVecSize-1; i++){
-		delTBaskets = vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime();
-		if(log10(delTBaskets)>=5.2 and log10(delTBaskets)<=6.6){
-			HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
-		}
+	//for(int i=0; i<vetoedbasketVecSize-1; i++){
+	//	delTBaskets = vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime();
+	//	if(log10(delTBaskets)>=2.5 and log10(delTBaskets)<=5.0){
+	//		HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
+	//	}
 		//HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
-	}
+	//}
 	
 	gPad->SetLogy();
 	//gPad->SetLogx();   
@@ -144,11 +144,11 @@ int main(int argc, char *argv[]){
     std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
 	
 	c1->SaveAs(("../../Data_Analysis_Results/EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers"+fname+".root").c_str());
-	fApp->Run();
-	*/
+	fApp->Run();*/
+	
 	
 	//For Time Difference
-	/*TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
+	TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
 	hTime->SetLineColor(kGreen);
 	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12.0);
 	hTimeVeto->SetLineColor(kRed);
@@ -176,13 +176,13 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
-    fApp->Run();*/
+    fApp->Run();
     
-    /*//For Basket Duration
-    TH1* BDelt = new TH1D("BDelt", "", 51, 0, 50);
+    //For Basket Duration
+    /*TH1* BDelt = new TH1D("BDelt", "", 51, 0, 50);
 	BDelt->SetLineColor(kGreen);
 	for(int i=0; i<basketVecSize-1; i++){
-		BDelt->Fill(vecOfBaskets[i]->GetBasketDuration()/1000/vecOfBaskets[i]->size());
+		BDelt->Fill(vecOfBaskets[i]->GetBasketDuration()/1000);//vecOfBaskets[i]->size());
 	}
 	BDelt->GetXaxis()->SetTitle("Basket Duration (ns)");
     BDelt->GetYaxis()->SetTitle("Counts");
