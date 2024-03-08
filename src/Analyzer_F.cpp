@@ -426,7 +426,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
   uint uniT;
   uint sigt;
   //ULong64_t prevbasketendtime = 0;
-  //std::cout<<"now starting"<<std::endl;
+  std::cout<<"now starting"<<std::endl;
   for (unsigned int i = 0; i < scintVecSize; i++) {
 	  if(i%1000000==0){
 		  std::cout << " Processing event : " << i << std::endl;
@@ -456,7 +456,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
 			  //std::cout<<"Entered Stage 2_2"<<std::endl;
 			  //singleBasket->SetBasketMeanTime();
 			  singleBasket->SetBasketStdDevT();
-			  uniT = basketdt/singleBasket->size(); //separation between poisson/uniform distributed events
+			  uniT = singleBasket->GetBasketDuration()/singleBasket->size(); //separation between poisson/uniform distributed events
 			  sigt = singleBasket->GetBasketStdDevT();
 			  compval = std::max(uniT,4*sigt/singleBasket->size());
 			  //std::cout<<"defined compval"<<std::endl;
@@ -466,7 +466,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
 			  //std::cout<<"filled first event"<<std::endl;
 			  for(uint j = 1 ; j < singleBasket->size() ; j++){
 				  //std::cout<<"basket size "<<singleBasket->size()<<std::endl;
-				  if((singleBasket->GetBasketEventTime(j)-finalBasket->GetBasketEndTime()) <= 1.5*compval){		//this can allow for more stringent cuts
+				  if((singleBasket->GetBasketEventTime(j)-finalBasket->GetBasketEndTime()) <= compval){//+int(TMath::Sqrt(compval))){		//this can allow for more stringent cuts
 					  if(singleBasket->GetEvent(j)->GetQFar()==0 or singleBasket->GetEvent(j)->GetQNear()==0){properev = false;}
 					  //std::cout<<"Adding event "<<j+1<<" of basket "<<sbVec.size()+1<<std::endl;
 					  finalBasket->push_back(new ScintillatorBar_F(*singleBasket->GetEvent(j)));

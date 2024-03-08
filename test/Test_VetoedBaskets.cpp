@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
 	
-	if(argc==5){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
+	if(argc==5 and numVetoLayers!=0){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
 	unsigned int vetoedbasketVecSize = vecOfBasketsPostVeto.size();
 	std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
 	
@@ -148,9 +148,11 @@ int main(int argc, char *argv[]){
 	
 	
 	//For Time Difference
-	TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12.0);
+	TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12);
+	hTime->SetStats(0);
 	hTime->SetLineColor(kGreen);
-	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12.0);
+	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12);
+	hTimeVeto->SetStats(0);
 	hTimeVeto->SetLineColor(kRed);
 	std::cout<<"histograms created"<<std::endl;
 	std::cout<<vecOfBaskets.size()<<std::endl;
@@ -160,7 +162,7 @@ int main(int argc, char *argv[]){
 		//}
 	}
 	std::cout<<"histogram hTime Filled"<<std::endl;
-	if(argc==5){
+	if(argc==5 and numVetoLayers!=0){
 		for(int i=0; i<vetoedbasketVecSize-1; i++){
 			hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
 		}
@@ -176,6 +178,11 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
+    std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
+	c1->SaveAs(("../../Data_Analysis_Results/InterBasketTimeSpectra_Canvas_"+std::to_string(basketdT/1000)+"ns_"+fname+".root").c_str());
+	TFile myfile(("../../Data_Analysis_Results/InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_"+fname+".root").c_str(),"RECREATE");
+	hTime->Write();
+	myfile.Close();
     fApp->Run();
     
     //For Basket Duration
