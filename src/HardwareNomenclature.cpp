@@ -208,5 +208,4 @@ bool IsJacket(ushort barIndx, std::vector<int> vecOfVetoBarIndx)
 	return isjacket;
 }
 
-
 } // namespace ismran

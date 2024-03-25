@@ -521,6 +521,30 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
   return sbVec;
 }
 
+std::vector<SingleBasket *> Analyzer_F::ReconstructRollingEventBasket()
+{
+  std::cout << "Going to Create Baskets with Rolling Event Lookup" << std::endl;
+  std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(), CompareTimestampScintillator);
+  unsigned int scintVecSize = fVecOfScint_F.size();
+  std::cout << "ScintVectSize : " << scintVecSize << std::endl;
+  SingleBasket *singleBasket = new SingleBasket();
+  SingleBasket *finalBasket = new SingleBasket();
+  std::vector<SingleBasket *> sbVec;
+  std::string outfileName = "Baskets_RollingEvent_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
+  basketFile->cd();
+  TTree *basketTree = new TTree("basketTree", "basketTree");
+  basketTree->Branch("Baskets", "ismran::SingleBasket", &finalBasket);
+  ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
+  double_t delt=0;
+  bool properev = true;
+  UInt_t badcounter=0;
+  uint compval;
+  uint uniT;
+  uint sigt;
+  
+}
+
 std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLayers, std::vector<SingleBasket *> baskets)
 {
   std::cout << "Going to Create Baskets with " << numVetoLayers << " veto layers" << std::endl;

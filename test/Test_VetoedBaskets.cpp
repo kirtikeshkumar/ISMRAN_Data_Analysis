@@ -3,8 +3,8 @@
  * 2024-01-25
  * Code to generate baskets and remove baskets with events in veto layers.
  * 
- * 		argv[1] is the filename to be checked
- * 		argv[2] is the path to claibration files
+ * 		argv[1] is the path to claibration files
+ * 		argv[2] is the filename to be checked
  * 		argv[3] is the max duration of single basket in ps
  * 		argv[4] is number of veto layers
  */
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]){
 	TApplication *fApp       = new TApplication("TEST", NULL, NULL);
 	
 	//Defining all variables from input arguments
-	std::string dataFileName    = std::string(argv[1]);
-	fs::path calibFilePath		= std::string(argv[2]);
+	std::string dataFileName    = std::string(argv[2]);
+	fs::path calibFilePath		= std::string(argv[1]);
 	ushort numVetoLayers 		= 0;									//number of veto layers
 	uint basketdT 				= 0;									// max duration of each basket. 
 																		//if basketdT = 0, baskets are made based on time difference between events

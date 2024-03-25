@@ -24,6 +24,7 @@ class ScintillatorBar_F;
 class SingleBasket {
 private:
   std::vector<ScintillatorBar_F*> fVecOfScintillators;
+  std::vector<ushort*> fVecOfNeighbours;
   Double_t BasketEnergy;
   ushort COMIndex;	//Index of Center Of Mass bar
   ULong64_t meanT;	//Average time of basket
@@ -62,6 +63,7 @@ public:
   ushort GetBasketCOMBar();
   Double_t GetBasketEnergy();
   Double_t GetBasketBarEnergy(int evtIndx);
+  std::vector<ushort*> GetBasketNeighbours();
   bool isBarInBasket(ushort barIndx);
   /*
    * Print functions
@@ -75,6 +77,7 @@ public:
    void SetBasketParameters();
    void SetBasketMeanTime();
    void SetBasketStdDevT();
+   void SetBasketNeighbours();
    //void SetBasketMeanTime(ULong64_t val);
    //void SetBasketStdDevT(uint val);
    void Initialiser();

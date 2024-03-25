@@ -269,4 +269,22 @@ Double_t ScintillatorBar_F::GetQMeanCorrected()
     return ener;
   
 }
+
+std::vector<ushort> GetNeighbourIndx(ScintillatorBar_F* bar)
+{
+	ushort barIndx = bar->GetBarIndex();
+	std::vector<ushort> neighbourIndx;
+	int i = barIndx%10;
+	int j = barIndx/10;
+	for(int k = std::max(i-1,0); k <= std::min(i+1,9); k++){
+		for(int l = std::max(j-1,0); l <= std::min(j+1,8); l++){
+			if(!(k == i and l == j)){
+				neighbourIndx.push_back(l*10+k);
+			}
+		}
+	}
+	std::sort(neighbourIndx.begin(),neighbourIndx.end());
+	return neighbourIndx; 
+}
+
 } // namespace ismran

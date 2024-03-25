@@ -18,6 +18,7 @@ ClassImp(ismran::SingleBasket)
 
 namespace ismran
 {
+  //////////////////////////////////////////////////////////////////////
   //Constructors
   SingleBasket::SingleBasket() {
 	  BasketEnergy=0.0;
@@ -34,7 +35,9 @@ namespace ismran
   SingleBasket::SingleBasket(std::vector<ScintillatorBar_F *> vecOfScintBars)
   {
     fVecOfScintillators = vecOfScintBars;
-    SetBasketParameters();
+    //SetBasketParameters();
+    SetBasketMeanTime();
+    SetBasketStdDevT();
   }
 
   SingleBasket::SingleBasket(const SingleBasket &sb)
@@ -42,10 +45,13 @@ namespace ismran
 	  for (unsigned int i = 0; i < sb.GetBasket().size(); i++) {
 	      fVecOfScintillators.push_back(new ScintillatorBar_F(*(sb.GetBasket()[i])));
       }
-	  SetBasketParameters();
+	  //SetBasketParameters();
+	  SetBasketMeanTime();
+	  SetBasketStdDevT();
 	  //Print();
   }
   
+  //////////////////////////////////////////////////////////////////////
   //Vectors
   void SingleBasket::clear()
   {
@@ -82,6 +88,7 @@ namespace ismran
 		  }
 	  }
   }
+  //////////////////////////////////////////////////////////////////////
   //Print
   void SingleBasket::Print()
   {
@@ -101,6 +108,7 @@ namespace ismran
     std::cout << "StdDev in Y of Basket is: " << GetBasketStdDevY() << std::endl;
     std::cout << "COM Bar of Basket is: " << GetBasketCOMBar() << std::endl;
   }
+  //////////////////////////////////////////////////////////////////////
   //Getters
   std::vector<ScintillatorBar_F *> SingleBasket::GetBasket() const { return fVecOfScintillators; }
   ULong64_t SingleBasket::GetBasketEventTime(int EvtIndx)
@@ -135,6 +143,7 @@ namespace ismran
 	  }
 	  return isbar;
   }
+  //////////////////////////////////////////////////////////////////////
   //Setters
   void SingleBasket::SetBasketEnergy(){
 	  BasketEnergy=0.0;
@@ -149,27 +158,20 @@ namespace ismran
 	  //std::cout<<"Entered for parameter setting"<<std::endl;
 	  BasketEnergy = 0.0;
 	  TH2* H2D  = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10);
-	  //TH1* H1DT  = new TH1I("H1DT", "Time", std::max(static_cast<int>(GetBasketDuration()/1000),1),0.0,std::max(static_cast<int>(GetBasketDuration()/1000),1)); // 1ns bins
 	  H2D->SetStats(0);	//not necessary, only sets stat box to not show
-	  //H1DT->SetStats(0);
 	  Double_t times = 0.0;
 	  ushort indxb;
 	  for(int j=0;j<size();j++){
 		  indxb = fVecOfScintillators[j]->GetBarIndex();
 		  H2D->Fill(indxb/10+0.5,indxb%10+0.5,GetBasketBarEnergy(j));
-		  //H1DT->Fill(GetBasketEventTime(j)-GetBasketStartTime());
 		  BasketEnergy += fVecOfScintillators[j]->GetQMeanCorrected()/1000.0;
 	  }
-	  //meanT = H1DT->GetMean()+GetBasketStartTime();
-	  //sigT = H1DT->GetRMS();
 	  SetBasketMeanTime();
 	  SetBasketStdDevT();
 	  COMIndex = static_cast<int>(std::floor(H2D->GetMean(1)))*10 + static_cast<int>(std::floor(H2D->GetMean(2)));
 	  sigX = H2D->GetStdDev(1);
 	  sigY = H2D->GetStdDev(2);
-	  //Print();
 	  delete H2D;
-	  //delete H1DT;	  
   }
   
   void SingleBasket::SetBasketMeanTime(){
