@@ -38,6 +38,7 @@ namespace ismran
     //SetBasketParameters();
     SetBasketMeanTime();
     SetBasketStdDevT();
+    SetBasketNeighbours();
   }
 
   SingleBasket::SingleBasket(const SingleBasket &sb)
@@ -48,6 +49,10 @@ namespace ismran
 	  //SetBasketParameters();
 	  SetBasketMeanTime();
 	  SetBasketStdDevT();
+	  for (unsigned int i = 0; i < sb.GetBasketNeighbours().size(); i++) {
+            ushort* ptr = new ushort(*(sb.GetBasketNeighbours()[i]));
+            fVecOfNeighbours.push_back(ptr);
+      }
 	  //Print();
   }
   
@@ -66,6 +71,7 @@ namespace ismran
 	sigT = 0;
 	meanT = 0;
     fVecOfScintillators.clear();
+    fVecOfNeighbours.clear();
   }
 
   uint SingleBasket::size() { return fVecOfScintillators.size(); }
@@ -74,6 +80,7 @@ namespace ismran
 	  if(fVecOfScintillators.size()==0){Initialiser();}
 	  fVecOfScintillators.push_back(scint); 
 	  SetBasketEnergy(scint->GetQMeanCorrected()/1000.0);
+	  SetBasketNeighbours(scint);
   }
   
   void SingleBasket::push_back(std::vector<ScintillatorBar_F *> vecOfScint) { 
@@ -143,6 +150,7 @@ namespace ismran
 	  }
 	  return isbar;
   }
+  std::vector<ushort*> SingleBasket::GetBasketNeighbours() const {return fVecOfNeighbours;}
   //////////////////////////////////////////////////////////////////////
   //Setters
   void SingleBasket::SetBasketEnergy(){
@@ -217,5 +225,35 @@ namespace ismran
 	  sigY = 0.0;
 	  sigT = 0;
 	  meanT = 0;
+  }
+  void SingleBasket::SetBasketNeighbours(){
+	  std::unordered_set<ushort *> uniqueValues; //only unique values can be entered into unordered_set
+	  std::vector<ushort *> vecBarNeighbour;
+	  for(int i=0; i < size(); i++){
+		  vecBarNeighbour = fVecOfScintillators[i]->GetNeighbourIndx(); //get the neighbours of each bar
+		  for(ushort* val: vecBarNeighbour){
+			  if (uniqueValues.insert(val).second){	//enter only if unique (.second tells if the number was entered. if not entered then not unique)
+                fVecOfNeighbours.push_back(val);
+			  }
+		  }
+		  vecBarNeighbour.clear();
+	  }
+  }
+  
+  void SingleBasket::SetBasketNeighbours(ScintillatorBar_F * scint){
+	  if(fVecOfNeighbours.size()==0){
+		  fVecOfNeighbours = scint->GetNeighbourIndx();
+	  }else{
+		  std::unordered_set<ushort *> uniqueValues;
+		  for(ushort* val: fVecOfNeighbours){
+			  uniqueValues.insert(val);
+		  }
+		  std::vector<ushort *> neighboursOfNewScint = scint->GetNeighbourIndx();
+		  for(ushort* val: neighboursOfNewScint){
+			  if (uniqueValues.insert(val).second){
+				  fVecOfNeighbours.push_back(val);
+			  }
+		  }
+	  }
   }
 } // namespace ismran

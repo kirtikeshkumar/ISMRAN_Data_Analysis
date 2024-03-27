@@ -409,63 +409,44 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
   SingleBasket *singleBasket = new SingleBasket();
   SingleBasket *finalBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
-  //std::cout<<"Creafting files"<<std::endl;
   std::string outfileName = "Baskets_Rolling_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
-  //std::cout<<"created files"<<std::endl;
   TTree *basketTree = new TTree("basketTree", "basketTree");
   basketTree->Branch("Baskets", "ismran::SingleBasket", &finalBasket);
-  //std::cout<<"defined files"<<std::endl;
   ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
-  //std::cout<<"tStart: "<<tStart<<std::endl;
   double_t delt=0;
   bool properev = true;
   UInt_t badcounter=0;
   uint compval;
   uint uniT;
   uint sigt;
-  //ULong64_t prevbasketendtime = 0;
   std::cout<<"now starting"<<std::endl;
   for (unsigned int i = 0; i < scintVecSize; i++) {
 	  if(i%1000000==0){
 		  std::cout << " Processing event : " << i << std::endl;
-	  	  //fVecOfScint_F[i]->Print();
 	  }
-	  
-	  //std::cout<<"___________________________________________________________________________________________________________________________________"<<std::endl;
-	  //std::cout<<"NOW LOOKING AT SCINT: "<<i<<std::endl;
-	  //std::cout<<tStart<<"	"<<fVecOfScint_F[i]->GetTStampAverage()<<"	"<<fVecOfScint_F[i]->GetTStampAverage() - tStart<<std::endl;
-      if (fVecOfScint_F[i]->GetTStampSmall() - tStart < basketdt) {
+	  if (fVecOfScint_F[i]->GetTStampSmall() - tStart < basketdt) {
         // Within basketdT window
         singleBasket->push_back(new ScintillatorBar_F(*fVecOfScint_F[i]));
         /*if(fVecOfScint_F[i]->GetQFar()==0 or fVecOfScint_F[i]->GetQNear()==0){ //events where QFar or QNear is 0 must be neglected 
 			properev=false;
 			badcounter+=1;
 		}*/
-		//std::cout<<"Passed Stage 1"<<std::endl;
       }else{
-		  //std::cout<<"Entered Stage 2"<<std::endl;
 		  if(singleBasket->size() ==1){
-			  //std::cout<<"Entered Stage 2_1"<<std::endl;
 			  finalBasket = new SingleBasket(*singleBasket);
 		      sbVec.push_back(new SingleBasket(*finalBasket));
 			  basketTree->Fill();
-			  //std::cout<<"Exited Stage 2_1"<<std::endl;
 		  }else{
-			  //std::cout<<"Entered Stage 2_2"<<std::endl;
 			  //singleBasket->SetBasketMeanTime();
 			  singleBasket->SetBasketStdDevT();
 			  uniT = singleBasket->GetBasketDuration()/singleBasket->size(); //separation between poisson/uniform distributed events
 			  sigt = singleBasket->GetBasketStdDevT();
 			  compval = std::max(uniT,4*sigt/singleBasket->size());
-			  //std::cout<<"defined compval"<<std::endl;
-			  //compval = std::min(uniT,4*sigt/singleBasket->size());
 			  finalBasket->push_back(new ScintillatorBar_F(*singleBasket->GetEvent(0)));
 			  if(singleBasket->GetEvent(0)->GetQFar()==0 or singleBasket->GetEvent(0)->GetQNear()==0){properev = false;}
-			  //std::cout<<"filled first event"<<std::endl;
 			  for(uint j = 1 ; j < singleBasket->size() ; j++){
-				  //std::cout<<"basket size "<<singleBasket->size()<<std::endl;
 				  if((singleBasket->GetBasketEventTime(j)-finalBasket->GetBasketEndTime()) <= compval){//+int(TMath::Sqrt(compval))){		//this can allow for more stringent cuts
 					  if(singleBasket->GetEvent(j)->GetQFar()==0 or singleBasket->GetEvent(j)->GetQNear()==0){properev = false;}
 					  //std::cout<<"Adding event "<<j+1<<" of basket "<<sbVec.size()+1<<std::endl;
@@ -490,26 +471,12 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
 				  }
 				  //std::cout<<"Going for event "<<j+1<<" of basket"<<sbVec.size()<<" of size "<<singleBasket->size()<<std::endl;
 			  }
-		  }	
-		  //prevbasketendtime = fVecOfScint_F[i-1]->GetTStampSmall();
-		  //singleBasket->Print();
-		  //finalBasket->Print();
-		  //sbVec[sbVec.size()-1]->Print();
-		  //std::cout<<"*********************************"<<std::endl;
-		  //std::cout<<"clearing basket "<<sbVec.size()<<std::endl;
-		  //std::cout<<"I is "<<i<<std::endl;
+		  }
 		  singleBasket->clear();
-		  //std::cout<<"*********************************"<<std::endl;
-		  //finalBasket->Print();
-		  //std::cout<<"clearing final basket "<<sbVec.size()<<" of size "<<finalBasket->size()<<std::endl;
 		  if(finalBasket){finalBasket->clear();}
-		  //std::cout<<"setting properev "<<sbVec.size()<<std::endl;
 		  properev=true;
-		  //std::cout<<"pushback "<<i<<std::endl;
-		  //fVecOfScint_F[14]->Print();
           singleBasket->push_back(new ScintillatorBar_F(*fVecOfScint_F[i]));
           tStart = fVecOfScint_F[i]->GetTStampSmall();
-          //std::cout<<"Passed Stage 2"<<std::endl;
       }
   }
   std::cout << "SBVec size : " << sbVec.size() << std::endl;
@@ -527,9 +494,9 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructRollingEventBasket()
   std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(), CompareTimestampScintillator);
   unsigned int scintVecSize = fVecOfScint_F.size();
   std::cout << "ScintVectSize : " << scintVecSize << std::endl;
-  SingleBasket *singleBasket = new SingleBasket();
   SingleBasket *finalBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
+  std::vector<SingleBasket *> vecOfOpenBaskets;
   std::string outfileName = "Baskets_RollingEvent_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
@@ -542,7 +509,19 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructRollingEventBasket()
   uint compval;
   uint uniT;
   uint sigt;
-  
+  std::cout<<"now starting"<<std::endl;
+  for (unsigned int i = 0; i < scintVecSize; i++) {
+	  if(i%1000000==0){
+		  std::cout << " Processing event : " << i << std::endl;
+	  	  //fVecOfScint_F[i]->Print();
+	  }
+	  SingleBasket *singleBasket = new SingleBasket();
+	  if(vecOfOpenBaskets.size()==0){
+		  singleBasket->push_back(new ScintillatorBar_F(*fVecOfScint_F[i]));
+		  //vecOfOpenBaskets.push_back()		  
+	  }
+  }
+  return sbVec;
 }
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLayers, std::vector<SingleBasket *> baskets)

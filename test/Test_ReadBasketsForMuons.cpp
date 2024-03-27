@@ -100,7 +100,8 @@ int main(int argc, char *argv[]){
 		if(i%1000000 == 0){std::cout<<"Analysing Basket "<<i<<" of "<<nentries<<std::endl;}
 		nbytes += ftree->GetEntry(i);
 		avBasketEnergy = (basket->GetBasketEnergy())/basket->size();
-		if(basket->size() >= 5 and (avBasketEnergy >= 15.0 and avBasketEnergy <= 25.0)){
+		//if(basket->size() >= 5 and (avBasketEnergy >= 15.0 and avBasketEnergy <= 25.0)){
+		if(basket->size() >= 1 and (avBasketEnergy >= 0.0 and avBasketEnergy <= 5.0)){
 			muBasketTree->Fill();
 			
 			//For plotting Inter Basket Time
@@ -131,13 +132,13 @@ int main(int argc, char *argv[]){
 		//c1->Clear();
 		//H2D->Reset();
 	}
-	
+	c1->cd(1);
 	gPad->SetLogy();
 	hTime->GetXaxis()->SetTitle("log10(delT)");
     hTime->GetYaxis()->SetTitle("Counts");
     hTime->Draw("C");
     std::string fname = dataFileName.substr(dataFileName.find("Baskets"),dataFileName.length()-dataFileName.find("Baskets")-5);
-    TFile myfile(("../../Data_Analysis_Results/InterBasketTimeSpectra_"+fname+".root").c_str(),"RECREATE");
+    TFile myfile(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_avE_0_5_"+fname+".root").c_str(),"RECREATE");
 	hTime->Write();
 	myfile.Close();
 	

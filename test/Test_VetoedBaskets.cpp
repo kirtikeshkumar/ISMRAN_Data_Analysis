@@ -143,7 +143,7 @@ int main(int argc, char *argv[]){
     leg->Draw();
     std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
 	
-	c1->SaveAs(("../../Data_Analysis_Results/EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers"+fname+".root").c_str());
+	c1->SaveAs(("../../Data_Analysis_Outputs/EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers"+fname+".root").c_str());
 	fApp->Run();*/
 	
 	
@@ -179,8 +179,8 @@ int main(int argc, char *argv[]){
     leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
     leg->Draw();
     std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
-	c1->SaveAs(("../../Data_Analysis_Results/InterBasketTimeSpectra_Canvas_"+std::to_string(basketdT/1000)+"ns_"+fname+".root").c_str());
-	TFile myfile(("../../Data_Analysis_Results/InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_"+fname+".root").c_str(),"RECREATE");
+	c1->SaveAs(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_Canvas_"+std::to_string(basketdT/1000)+"ns_"+fname+".root").c_str());
+	TFile myfile(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_"+fname+".root").c_str(),"RECREATE");
 	hTime->Write();
 	myfile.Close();
     fApp->Run();

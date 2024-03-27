@@ -51,6 +51,7 @@ public:
    * Required Getters
    */
   std::vector<ScintillatorBar_F*> GetBasket() const;
+  std::vector<ushort*> GetBasketNeighbours() const;
   ScintillatorBar_F* GetEvent(int EvtIndx);
   ULong64_t GetBasketEventTime(int EvtIndx);
   ULong64_t GetBasketStartTime();
@@ -63,7 +64,6 @@ public:
   ushort GetBasketCOMBar();
   Double_t GetBasketEnergy();
   Double_t GetBasketBarEnergy(int evtIndx);
-  std::vector<ushort*> GetBasketNeighbours();
   bool isBarInBasket(ushort barIndx);
   /*
    * Print functions
@@ -78,6 +78,7 @@ public:
    void SetBasketMeanTime();
    void SetBasketStdDevT();
    void SetBasketNeighbours();
+   void SetBasketNeighbours(ScintillatorBar_F *bar);
    //void SetBasketMeanTime(ULong64_t val);
    //void SetBasketStdDevT(uint val);
    void Initialiser();

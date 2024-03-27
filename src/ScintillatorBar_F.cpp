@@ -270,16 +270,16 @@ Double_t ScintillatorBar_F::GetQMeanCorrected()
   
 }
 
-std::vector<ushort> GetNeighbourIndx(ScintillatorBar_F* bar)
+std::vector<ushort *> ScintillatorBar_F::GetNeighbourIndx()
 {
-	ushort barIndx = bar->GetBarIndex();
-	std::vector<ushort> neighbourIndx;
-	int i = barIndx%10;
-	int j = barIndx/10;
-	for(int k = std::max(i-1,0); k <= std::min(i+1,9); k++){
-		for(int l = std::max(j-1,0); l <= std::min(j+1,8); l++){
+	ushort barIndx = fBarIndex;
+	std::vector<ushort *> neighbourIndx;
+	ushort i = barIndx%10;
+	ushort j = barIndx/10;
+	for(ushort k = std::max(i-1,0); k <= std::min(i+1,9); k++){
+		for(ushort l = std::max(j-1,0); l <= std::min(j+1,8); l++){
 			if(!(k == i and l == j)){
-				neighbourIndx.push_back(l*10+k);
+				neighbourIndx.push_back(new ushort(l*10+k));
 			}
 		}
 	}

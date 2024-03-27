@@ -64,7 +64,7 @@ public:
   ushort GetBarIndex() const;
   ushort GetLayerIndex();
   ushort GetBarIndexInLayer();
-  std::vector<int> GetNeighbourIndx(ScintillatorBar_F* bar);
+  std::vector<ushort *> GetNeighbourIndx();
   ULong64_t GetEvNo()const {return fEvNo;}
 
   // Charge related
