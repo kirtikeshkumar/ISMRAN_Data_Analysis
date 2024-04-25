@@ -33,7 +33,7 @@ private:
   //Storing the event no. corresponding to TTree
   ULong64_t fEvNo;
 
-  /*Only for H9 data*/
+  
   UInt_t fQnear;
   UInt_t fQfar;
 
@@ -43,6 +43,7 @@ private:
 
 
 public:
+  
   ScintillatorBar_F();
   ScintillatorBar_F(unsigned int bIndex);
   // Required copy constructor
@@ -50,6 +51,7 @@ public:
   ScintillatorBar_F(ULong64_t evNo,ushort barIndex, UInt_t qlong, ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
   ScintillatorBar_F(ushort barIndex, UInt_t qlong, ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
   ScintillatorBar_F(ushort barIndex, UInt_t qnear, UInt_t qfar, ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
+  
 
   // Functions to get the Hit Position
   /*ismran::Point3D *EstimateHitPosition();

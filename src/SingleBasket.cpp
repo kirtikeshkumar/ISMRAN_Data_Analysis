@@ -13,6 +13,7 @@
 #include "Plotter.h"
 #include <algorithm>
 #include "colors.h"
+#include "Helpers.h"
 
 ClassImp(ismran::SingleBasket)
 
@@ -39,20 +40,19 @@ namespace ismran
     SetBasketMeanTime();
     SetBasketStdDevT();
     SetBasketNeighbours();
+    SetBasketEnergy();
   }
 
   SingleBasket::SingleBasket(const SingleBasket &sb)
-  {
-	  for (unsigned int i = 0; i < sb.GetBasket().size(); i++) {
-	      fVecOfScintillators.push_back(new ScintillatorBar_F(*(sb.GetBasket()[i])));
+  {	  //doing deep copy to ensure the object (scintillator bar) is copied as a whole and not just the pointer to it, which will be deleted later
+	  for (unsigned int i = 0; i < sb.GetBasket().size(); i++) { 
+		  fVecOfScintillators.push_back(new ScintillatorBar_F(*(sb.GetBasket()[i])));
       }
-	  //SetBasketParameters();
+      BasketEnergy = sb.BasketEnergy;
+      //SetBasketParameters();
 	  SetBasketMeanTime();
 	  SetBasketStdDevT();
-	  for (unsigned int i = 0; i < sb.GetBasketNeighbours().size(); i++) {
-            ushort* ptr = new ushort(*(sb.GetBasketNeighbours()[i]));
-            fVecOfNeighbours.push_back(ptr);
-      }
+      fVecOfNeighbours = sb.fVecOfNeighbours; //here shallow copy works, as the members are not objects of another class
 	  //Print();
   }
   
@@ -106,6 +106,11 @@ namespace ismran
     for (unsigned int i = 0; i < scintBarVec.size(); i++) {
       scintBarVec[i]->Print();
     }
+    std::cout<<"NEIGHBOURS"<<std::endl;
+    for (unsigned int i = 0; i < fVecOfNeighbours.size(); i++) {
+      std::cout<<*(fVecOfNeighbours[i])<<" ";
+    }
+    std::cout << std::endl;
     std::cout << "Number of bars in Basket is: " << scintBarVec.size() << std::endl;
     std::cout << "Total Energy of Basket is: " << GetBasketEnergy() << std::endl;
     std::cout << "Start Time of Basket is: " << GetBasketStartTime() << std::endl;

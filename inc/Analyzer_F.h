@@ -30,11 +30,12 @@ private:
 
 public:
   Analyzer_F();
-  Analyzer_F(std::string datafilename,unsigned int numOfEvents=0);
+  Analyzer_F(std::string datafilename,unsigned int numOfEvents=0, double EThreshold=100);
   ~Analyzer_F();
-  void LoadData(unsigned int numOfEvents);
+  void LoadData(unsigned int numOfEvents, double EThreshold);
   std::vector<ScintillatorBar_F*> GetVectorOfScintillators();
   //std::vector<std::shared_ptr<ScintillatorBar_F>> GetVectorOfScintillators();
+  std::vector<SingleBasket *> ReadBasket(std::string datafilename);
   std::vector<SingleMuonTrack*> ReconstructMuonTrack();
   std::vector<SingleBasket *> ReconstructBasket();
   std::vector<SingleBasket *> ReconstructRollingEventBasket();

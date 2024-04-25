@@ -1,0 +1,225 @@
+/*
+ * Kirtikesh Kumar
+ * 2024-01-25
+ * Code to generate baskets and remove baskets with events in veto layers.
+ * 
+ * 		argv[1] is the path to claibration files
+ * 		argv[2] is the basket filename
+ * 		argv[3] is number of veto layers
+ */
+#include <iostream>
+#include "ScintillatorBar_F.h"
+#include "Analyzer_F.h"
+#include "SingleBasket.h"
+#include "Plotter.h"
+#include <TFile.h>
+#include "HardwareNomenclature.h"
+#include "Helpers.h"
+#include <TString.h>
+#include "Database.h"
+#include "TFile.h"
+#include "TCanvas.h"
+#include "TH1F.h"
+#include <TApplication.h>
+#include <filesystem>
+namespace fs = std::filesystem;
+
+int main(int argc, char *argv[]){
+	std::cout<<"argc "<<argc<<std::endl;
+	TApplication *fApp       = new TApplication("TEST", NULL, NULL);
+	
+	//Defining all variables from input arguments
+	std::string dataFileName    = std::string(argv[2]);
+	fs::path calibFilePath		= std::string(argv[1]);
+	ushort numVetoLayers 		= 0;									//number of veto layers
+	
+	if(argv[3]){std::sscanf(argv[3], "%hd", &numVetoLayers); }	
+	
+	//Generating Calibration Instance
+	ismran::Calibration Calib;
+	Calib.instance(calibFilePath.string());
+	
+	//Reading and sorting events from file
+	std::vector<ismran::SingleBasket *> vecOfBaskets;	
+	std::vector<ismran::SingleBasket *> vecOfBasketsPostVeto;	
+	
+	//Initialise the analyser and read baskets
+	ismran::Analyzer_F an;
+	vecOfBaskets = an.ReadBasket(dataFileName);
+	
+	unsigned int basketVecSize = vecOfBaskets.size();
+	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
+	
+	if(argc==4 and numVetoLayers!=0){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
+	unsigned int vetoedbasketVecSize = vecOfBasketsPostVeto.size();
+	std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
+	
+	//Generating plots
+	TCanvas *c1 = new TCanvas("c1","",10,10,720,800);
+	c1->cd(1);
+	gStyle->SetPalette(kRainBow);	
+	
+	
+	// For 2d hits 
+	/*TH2* H2D = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10); 
+	std::vector<ismran::ScintillatorBar_F *> basketscint;
+	H2D->SetStats(0);
+	//char* histsavename="../Plots/Basket"
+	
+	ushort indxb;
+	Double_t levels[501];
+	for(int i=0;i<sizeof(levels)/sizeof(levels[0]);i++){
+		levels[i]=i*0.1;
+	} 
+	for(int i=0; i<vecOfBaskets.size(); i++){
+		if(vecOfBaskets[i]->size()>=2){
+			basketscint = vecOfBaskets[i]->GetBasket();
+			for(int j=0;j<basketscint.size();j++){
+				indxb = basketscint[j]->GetBarIndex();
+				H2D->Fill(indxb/10+0.5,indxb%10+0.5,vecOfBaskets[i]->GetBasketBarEnergy(j));
+			}
+			//break;
+			H2D->GetXaxis()->SetTitle("X");
+			H2D->GetYaxis()->SetTitle("Y");
+			H2D->SetContour(sizeof(levels)/sizeof(levels[0]),levels);
+			//H2D->Draw("ARR");
+			H2D->Draw("colz");
+			//H2D->Draw("TEXT");		
+			c1->SaveAs(("../Plots/Basket"+std::to_string(i)+".jpg").c_str());
+		}
+		c1->Clear();
+		H2D->Reset();
+	}*/
+	
+	
+	// For energy Spectra
+	/*TH1* HEUnVeto = new TH1D("HEUnVeto", "", 501, 0, 500);
+	HEUnVeto->SetLineColor(kGreen);
+	TH1* HEVeto = new TH1D("HEVeto", "", 501, 0, 500);
+	HEVeto->SetLineColor(kRed);
+	unsigned int vetobasketcounter=0;
+	ULong64_t delTBaskets;
+	for(int i=0; i<basketVecSize-1; i++){
+		//delTBaskets = vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime();
+		//if(log10(delTBaskets)>=5.2 and log10(delTBaskets)<=6.6){
+			HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
+		//}
+		//if(log10(delTBaskets)>=2.5 and log10(delTBaskets)<=5.0){
+		//	HEVeto->Fill(vecOfBaskets[i+1]->GetBasketEnergy());
+		//}
+	}
+	
+	//for(int i=0; i<vetoedbasketVecSize-1; i++){
+	//	delTBaskets = vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime();
+	//	if(log10(delTBaskets)>=2.5 and log10(delTBaskets)<=5.0){
+	//		HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
+	//	}
+		//HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
+	//}
+	
+	gPad->SetLogy();
+	//gPad->SetLogx();   
+   
+    HEUnVeto->GetXaxis()->SetTitle("Energy(MeV)");
+    HEUnVeto->GetYaxis()->SetTitle("Counts");
+    HEUnVeto->Draw("C");
+    HEVeto->Draw("LSAME");
+    TLegend *leg = new TLegend(0.6,0.7,0.75,0.85);
+    leg->SetBorderSize(0);
+    leg->AddEntry(HEUnVeto,"Total Energy Spectra","l");
+    leg->AddEntry(HEVeto,"Vetoed Energy Spectra","l");
+    leg->Draw();
+    std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
+	c1->SaveAs(("../../Data_Analysis_Outputs/Canvas_EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers_"+std::to_string(basketdT/1000)+"ns_Basket_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str());
+	TFile myfile(("../../Data_Analysis_Outputs/EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers_"+std::to_string(basketdT/1000)+"ns_Basket_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str(),"RECREATE");
+	HEUnVeto->Write();
+	//HEVeto->Write();
+	myfile.Close();
+	//c1->SaveAs(("../../Data_Analysis_Outputs/EnergySpectra_"+std::to_string(numVetoLayers)+"_VetoLayers"+fname+".root").c_str());
+	fApp->Run();*/
+	
+	
+	//For Time Difference
+	TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12);
+	hTime->SetStats(0);
+	hTime->SetLineColor(kGreen);
+	
+	TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12);
+	hTimeVeto->SetStats(0);
+	hTimeVeto->SetLineColor(kRed);
+	
+	TH2* hTimeEnergy = new TH2D("hTimeEnergy", "", 2501, 0.0, 2.5, 601, 0.0, 12);
+	//TH2* hEnergyMult = new TH2D("hEnergyMult", "", 2501, 0, 2.5, 101, 0.0, 100);
+	
+	std::cout<<"histograms created"<<std::endl;
+	std::cout<<vecOfBaskets.size()<<std::endl;
+	for(int i=0; i<basketVecSize-1; i++){
+		//if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and vecOfBaskets[i]->GetBasketEnergy()<10.0){
+			//hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
+			if(argc < 4 or numVetoLayers==0){
+				hTimeEnergy->Fill(log10(vecOfBaskets[i]->GetBasketEnergy()), log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
+				//hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()), (vecOfBaskets[i]->size()));
+			}
+			//hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()), vecOfBaskets[i]->size());
+		//}
+	}
+	std::cout<<"histogram hTime Filled"<<std::endl;
+	if(argc==4 and numVetoLayers!=0){
+		for(int i=0; i<vetoedbasketVecSize-1; i++){
+			//hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
+			hTimeEnergy->Fill((vecOfBasketsPostVeto[i]->GetBasketEnergy()), log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
+		}
+		std::cout<<"histogram hTimeVeto Filled"<<std::endl;
+	}
+	/*gPad->SetLogy();
+	hTime->GetXaxis()->SetTitle("log10(delT)");
+    hTime->GetYaxis()->SetTitle("Counts");
+    hTime->Draw("C");
+    hTimeVeto->Draw("SAME");
+    TLegend *leg = new TLegend(0.6,0.7,0.75,0.85);
+    leg->SetBorderSize(0);
+    leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
+    leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
+    leg->Draw();
+    std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
+	c1->SaveAs(("../../Data_Analysis_Outputs/Canvas_InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str());
+	TFile myfile(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str(),"RECREATE");
+	hTime->Write();
+	myfile.Close();*/
+	
+	//hTimeEnergy->Smooth();
+    hTimeEnergy->DrawCopy("colz");
+    //std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
+    if(argc < 4 or numVetoLayers==0){
+		c1->SaveAs(("../../Data_Analysis_Outputs/"+dataFileName).c_str());
+		TFile myfile(("../../Data_Analysis_Outputs/"+dataFileName).c_str(),"RECREATE");
+		hTimeEnergy->Write();
+		myfile.Close();
+	}else if(argc==4 and numVetoLayers!=0){
+		//c1->SaveAs(("../../Data_Analysis_Outputs/InterBasketTimeEnergySpectra_Canvas_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+std::to_string(numVetoLayers)+"_VetoLayers_LogE_"+fname+"1.root").c_str());
+		//TFile myfile(("../../Data_Analysis_Outputs/InterBasketTimeEnergySpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+std::to_string(numVetoLayers)+"_VetoLayers_LogE_"+fname+"1.root").c_str(),"RECREATE");
+		//hTimeEnergy->Write();
+		//myfile.Close();
+	}
+	
+	/*hEnergyMult->DrawCopy("colz");
+    std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
+    c1->SaveAs(("../../Data_Analysis_Outputs/InterBasketEnergyMultSpectra_Canvas_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_VLE2_Linear_"+fname+"1.root").c_str());
+	TFile myfile(("../../Data_Analysis_Outputs/InterBasketEnergyMultSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_VLE2_Linear_"+fname+"1.root").c_str(),"RECREATE");
+	hEnergyMult->Write();
+	myfile.Close();*/
+	fApp->Run();
+    
+    //For Basket Duration
+    /*TH1* BDelt = new TH1D("BDelt", "", 51, 0, 50);
+	BDelt->SetLineColor(kGreen);
+	for(int i=0; i<basketVecSize-1; i++){
+		BDelt->Fill(vecOfBaskets[i]->GetBasketDuration()/1000);//vecOfBaskets[i]->size());
+	}
+	BDelt->GetXaxis()->SetTitle("Basket Duration (ns)");
+    BDelt->GetYaxis()->SetTitle("Counts");
+    BDelt->Draw("C");
+    fApp->Run();*/
+}
+	
+

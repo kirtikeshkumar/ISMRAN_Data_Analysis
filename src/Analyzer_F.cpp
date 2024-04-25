@@ -14,16 +14,17 @@
 #include "PairFinder.h"
 #include "TreeEntry.h"
 #include "colors.h"
+using namespace std;
 namespace ismran {
 
 unsigned int Analyzer_F::numOfShots = 1;
 unsigned int Analyzer_F::shotNo     = 1;
 
 Analyzer_F::Analyzer_F() {}
-Analyzer_F::Analyzer_F(std::string datafilename, unsigned int numOfEvents)
+Analyzer_F::Analyzer_F(std::string datafilename, unsigned int numOfEvents, double EThreshold)
 {
   fDatafileName = datafilename;
-  LoadData(numOfEvents);
+  LoadData(numOfEvents, EThreshold);
 }
 Analyzer_F::~Analyzer_F() {}
 
@@ -32,7 +33,7 @@ unsigned int Analyzer_F::GetFileTime() const
   return fFileTime;
 }
 #ifndef FOLDED_DATA
-void Analyzer_F::LoadData(unsigned int numOfEvents)
+void Analyzer_F::LoadData(unsigned int numOfEvents, double EThreshold)
 {
   TFile *fp = new TFile(fDatafileName.c_str(), "r");
   UShort_t fBrCh_prev;
@@ -169,7 +170,7 @@ void Analyzer_F::LoadData(unsigned int numOfEvents)
 
 #else
 /*Function to load the data and in the vector of Scintillator_F*/
-void Analyzer_F::LoadData(unsigned int numOfEvents)
+void Analyzer_F::LoadData(unsigned int numOfEvents, double EThreshold)
 {
   TFile *fp = new TFile(fDatafileName.c_str(), "r");
 
@@ -219,7 +220,12 @@ void Analyzer_F::LoadData(unsigned int numOfEvents)
 	
     if (0) std::cout << fBrCh << " , " << fQlong << " , " << fTstamp << " , " << fTime << " , " << fDelt << std::endl;
 	//if(properev){
-	fVecOfScint_F.push_back(new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt));
+	ScintillatorBar_F* sbar = new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt);
+	double energ = sbar->GetQMeanCorrected();
+	if(energ>=EThreshold){
+		fVecOfScint_F.push_back(new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt));
+	}
+	delete sbar;
 	//}
     //fVecOfScint_F.push_back(new ScintillatorBar_F(fBrCh, fQlong, fTstamp, fTime, fDelt));
 
@@ -236,6 +242,46 @@ void Analyzer_F::LoadData(unsigned int numOfEvents)
   fp->Close();
 }
 #endif
+
+std::vector<SingleBasket *> Analyzer_F::ReadBasket(std::string datafilename){
+	if(fDatafileName.empty()){fDatafileName = datafilename;}
+	TFile *fp = new TFile(fDatafileName.c_str(), "r");
+	std::vector<SingleBasket *> sbVec;
+	if (!fp || fp->IsZombie()) {
+        std::cerr << "Error: Unable to open file." << std::endl;
+        return sbVec;
+    }
+    
+    //read the tree 
+	TTree *ftree = dynamic_cast<TTree*>(fp->Get("basketTree"));
+    if (!ftree) {
+        std::cerr << "Error: Unable to retrieve tree from file." << std::endl;
+        fp->Close();
+        return sbVec;
+    }
+    
+    std::cout<<"Loaded basketTree"<<std::endl;
+    
+    // Set the branch address to read the object from the tree
+	ismran::SingleBasket *basket = new ismran::SingleBasket();
+    ftree->SetBranchAddress("Baskets", &basket);
+    
+    //Initialising the vecotr to read into
+    
+    
+    //initialising variables before reading
+    Long64_t nentries = ftree->GetEntries();
+	Long64_t nbytes = 0;
+	
+	for (Long64_t i=0; i<nentries;i++) {
+		if(i%1000000 == 0){std::cout<<"Reading Basket "<<i<<" of "<<nentries<<std::endl;}
+		nbytes += ftree->GetEntry(i);
+		sbVec.push_back(new SingleBasket(*basket));
+	}
+	fp->Close();
+	return sbVec;    
+}
+
 // std::vector<std::shared_ptr<SingleMuonTrack>> Analyzer_F::ReconstructMuonTrack()
 std::vector<SingleMuonTrack *> Analyzer_F::ReconstructMuonTrack()
 {
@@ -378,16 +424,19 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
 		}
       } else {
 		  //if(sbVec.size()==9){singleBasket->Print();}
-		  if(properev){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
+		  if(properev && singleBasket->GetBasketEnergy()<=2.5){// && singleBasket->GetBasketEnergy()>=0.40){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
+			  //singleBasket->Print();
 			  sbVec.push_back(new SingleBasket(*singleBasket));
 			  basketTree->Fill();
-		  }
-		  //if(sbVec.size()==10){sbVec[9]->Print();}
-		  prevbasketendtime = fVecOfScint_F[i-1]->GetTStampSmall();
+		  }		  
 		  singleBasket->clear();
-		  properev=true;
+		  if(fVecOfScint_F[i]->GetQFar()==0 or fVecOfScint_F[i]->GetQNear()==0){ //events where QFar or QNear is 0 must be neglected 
+			  properev=false;
+			  badcounter+=1;
+		  }else{properev = true;}
           singleBasket->push_back(fVecOfScint_F[i]);
           tStart = fVecOfScint_F[i]->GetTStampSmall();
+          
       }
  //   }
   }
@@ -530,7 +579,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLaye
   SingleBasket *singleBasket = new SingleBasket();
   std::vector<SingleBasket *> vsbVec;
   
-  std::string outfileName = "VetoedBaskets_with_" + std::to_string(numVetoLayers) + "_VetoLayers_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "VetoLayerBaskets_with_" + std::to_string(numVetoLayers) + "_VetoLayers_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -544,6 +593,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLaye
   bool veto=false;
   
   for(uint i=0; i<basketVecSize;i++){
+	  if(i%1000000==0){std::cout<<"Analyzing Basket: "<<i<<std::endl;}
 	  //std::cout<<"Basket Energy "<<baskets[i]->GetBasketEnergy()<<std::endl;
 	  singleBasket = new SingleBasket(*baskets[i]);
 	  //std::cout<<"singleBasket Energy "<<singleBasket->GetBasketEnergy()<<" size "<< singleBasket->size() <<std::endl;
@@ -552,9 +602,9 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLaye
 	  for(unsigned int j=0; j<singleBasket->size(); j++){
 		  barindex = (singleBasket->GetBasket())[j]->GetBarIndex();
 		  veto = ismran::IsJacket(barindex, VetoBarsIndx);
-		  if(veto){break;}
+		  if(!veto){break;}
 	  }
-	  if(!veto){
+	  if(veto){
 		  vsbVec.push_back(new ismran::SingleBasket(*baskets[i]));
 		  basketTree->Fill();
 	  }
