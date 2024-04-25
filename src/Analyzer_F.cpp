@@ -579,7 +579,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLaye
   SingleBasket *singleBasket = new SingleBasket();
   std::vector<SingleBasket *> vsbVec;
   
-  std::string outfileName = "VetoLayerBaskets_with_" + std::to_string(numVetoLayers) + "_VetoLayers_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "VetoBaskets_with_" + std::to_string(numVetoLayers) + "_VetoLayers_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -602,9 +602,9 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLaye
 	  for(unsigned int j=0; j<singleBasket->size(); j++){
 		  barindex = (singleBasket->GetBasket())[j]->GetBarIndex();
 		  veto = ismran::IsJacket(barindex, VetoBarsIndx);
-		  if(!veto){break;}
+		  if(veto){break;}
 	  }
-	  if(veto){
+	  if(!veto){
 		  vsbVec.push_back(new ismran::SingleBasket(*baskets[i]));
 		  basketTree->Fill();
 	  }
