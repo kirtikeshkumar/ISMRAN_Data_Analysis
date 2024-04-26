@@ -166,7 +166,7 @@ int main(int argc, char *argv[]){
 		//if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and vecOfBaskets[i]->GetBasketEnergy()<10.0){
 			//hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
 			if(argc < 6 or numVetoLayers==0){
-				hTimeEnergy->Fill((vecOfBaskets[i]->GetBasketEnergy()), log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
+				hTimeEnergy->Fill(log10(vecOfBaskets[i+1]->GetBasketEnergy()), log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
 				//hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()), (vecOfBaskets[i]->size()));
 			}
 		//}
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]){
 	if(argc==6 and numVetoLayers!=0){
 		for(int i=0; i<vetoedbasketVecSize-1; i++){
 			//hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
-			hTimeEnergy->Fill((vecOfBasketsPostVeto[i]->GetBasketEnergy()), log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
+			hTimeEnergy->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketEnergy()), log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
 		}
 		std::cout<<"histogram hTimeVeto Filled"<<std::endl;
 	}
@@ -199,8 +199,8 @@ int main(int argc, char *argv[]){
     hTimeEnergy->DrawCopy("colz");
     std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
     if(argc < 6 or numVetoLayers==0){
-		c1->SaveAs(("../../Data_Analysis_Outputs/InterBasketTimeEnergySpectra_Canvas_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_VLE2_Linear_"+fname+"1.root").c_str());
-		TFile myfile(("../../Data_Analysis_Outputs/InterBasketTimeEnergySpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_VLE2_Linear_"+fname+"1.root").c_str(),"RECREATE");
+		c1->SaveAs(("../../Data_Analysis_Outputs/InterBasketTimeEnergySpectra_Canvas_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_LogE_"+fname+"1.root").c_str());//VLE2_Linear
+		TFile myfile(("../../Data_Analysis_Outputs/InterBasketTimeEnergySpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_LogE_"+fname+"1.root").c_str(),"RECREATE");
 		hTimeEnergy->Write();
 		myfile.Close();
 	}else if(argc==6 and numVetoLayers!=0){

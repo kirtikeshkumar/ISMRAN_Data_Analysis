@@ -39,6 +39,13 @@ int main(int argc, char *argv[]){
 	ismran::Calibration Calib;
 	Calib.instance(calibFilePath.string());
 	
+	std::string datfile = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi"));
+	std::string baskettime = dataFileName.substr(dataFileName.find("ns_")-2,4);
+	std::string outfilepath = "../../Data_Analysis_Outputs/";
+	std::string xtype = "LogE";
+	std::string outfilename = outfilepath+"InterBasketTimeEnergySpectra_"+baskettime+"_Threshold_100keV_"+xtype+"_"+datfile;
+	std::string outCanvasname = outfilepath+"InterBasketTimeEnergySpectra_Canvas_"+baskettime+"_Threshold_100keV_"+xtype+"_"+datfile;
+	
 	//Reading and sorting events from file
 	std::vector<ismran::SingleBasket *> vecOfBaskets;	
 	std::vector<ismran::SingleBasket *> vecOfBasketsPostVeto;	
@@ -157,7 +164,7 @@ int main(int argc, char *argv[]){
 		//if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and vecOfBaskets[i]->GetBasketEnergy()<10.0){
 			//hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
 			if(argc < 4 or numVetoLayers==0){
-				hTimeEnergy->Fill(log10(vecOfBaskets[i]->GetBasketEnergy()), log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
+				hTimeEnergy->Fill(log10(vecOfBaskets[i+1]->GetBasketEnergy()), log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
 				//hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()), (vecOfBaskets[i]->size()));
 			}
 			//hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()), vecOfBaskets[i]->size());
@@ -191,8 +198,8 @@ int main(int argc, char *argv[]){
     hTimeEnergy->DrawCopy("colz");
     //std::string fname = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
     if(argc < 4 or numVetoLayers==0){
-		c1->SaveAs(("../../Data_Analysis_Outputs/"+dataFileName).c_str());
-		TFile myfile(("../../Data_Analysis_Outputs/"+dataFileName).c_str(),"RECREATE");
+		c1->SaveAs((outCanvasname).c_str(),"RECREATE");
+		TFile myfile((outfilename).c_str(),"RECREATE");
 		hTimeEnergy->Write();
 		myfile.Close();
 	}else if(argc==4 and numVetoLayers!=0){

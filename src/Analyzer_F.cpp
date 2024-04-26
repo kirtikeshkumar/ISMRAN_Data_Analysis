@@ -399,7 +399,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
   SingleBasket *singleBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
   
-  std::string outfileName = "Baskets_of_TSpan_" + std::to_string(basketdT/1000) + "ms_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "Baskets_of_TSpan_" + std::to_string(basketdT/1000) + "ns_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -424,7 +424,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
 		}
       } else {
 		  //if(sbVec.size()==9){singleBasket->Print();}
-		  if(properev && singleBasket->GetBasketEnergy()<=2.5){// && singleBasket->GetBasketEnergy()>=0.40){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
+		  if(properev){// && singleBasket->GetBasketEnergy()>=2){// && singleBasket->GetBasketEnergy()>=0.40){// and (singleBasket->GetBasketStartTime()-prevbasketendtime) >= basketdT){ //this allows to neglect baskets very close in time
 			  //singleBasket->Print();
 			  sbVec.push_back(new SingleBasket(*singleBasket));
 			  basketTree->Fill();
