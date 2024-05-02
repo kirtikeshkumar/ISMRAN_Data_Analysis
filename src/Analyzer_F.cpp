@@ -24,7 +24,8 @@ Analyzer_F::Analyzer_F() {}
 Analyzer_F::Analyzer_F(std::string datafilename, unsigned int numOfEvents, double EThreshold)
 {
   fDatafileName = datafilename;
-  LoadData(numOfEvents, EThreshold);
+  BarEThreshold = EThreshold;
+  LoadData(numOfEvents, BarEThreshold);
 }
 Analyzer_F::~Analyzer_F() {}
 
@@ -35,6 +36,8 @@ unsigned int Analyzer_F::GetFileTime() const
 #ifndef FOLDED_DATA
 void Analyzer_F::LoadData(unsigned int numOfEvents, double EThreshold)
 {
+  //THRESHOLD IS NOT IMPLEMENTED YET HERE
+  
   TFile *fp = new TFile(fDatafileName.c_str(), "r");
   UShort_t fBrCh_prev;
   ULong64_t fTstamp_prev;
@@ -272,13 +275,16 @@ std::vector<SingleBasket *> Analyzer_F::ReadBasket(std::string datafilename){
     //initialising variables before reading
     Long64_t nentries = ftree->GetEntries();
 	Long64_t nbytes = 0;
+	double Ethresh = 999999999.0;
 	
 	for (Long64_t i=0; i<nentries;i++) {
 		if(i%1000000 == 0){std::cout<<"Reading Basket "<<i<<" of "<<nentries<<std::endl;}
 		nbytes += ftree->GetEntry(i);
+		if(basket->GetBasketEnergy() < Ethresh){Ethresh = basket->GetBasketEnergy();}
 		sbVec.push_back(new SingleBasket(*basket));
 	}
 	fp->Close();
+	BarEThreshold = Ethresh;
 	return sbVec;    
 }
 
@@ -399,7 +405,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT)
   SingleBasket *singleBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
   
-  std::string outfileName = "Baskets_of_TSpan_" + std::to_string(basketdT/1000) + "ns_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "../../Data_Analysis_Outputs/Baskets/Raw/Baskets_of_TSpan_" + std::to_string(basketdT/1000) + "ns_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -458,7 +464,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket()
   SingleBasket *singleBasket = new SingleBasket();
   SingleBasket *finalBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
-  std::string outfileName = "Baskets_Rolling_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "../../Data_Analysis_Outputs/Baskets/Raw/Baskets_Rolling_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -546,7 +552,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructRollingEventBasket()
   SingleBasket *finalBasket = new SingleBasket();
   std::vector<SingleBasket *> sbVec;
   std::vector<SingleBasket *> vecOfOpenBaskets;
-  std::string outfileName = "Baskets_RollingEvent_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "../../Data_Analysis_Outputs/Baskets/Raw/Baskets_RollingEvent_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -579,7 +585,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructVetoedBasket(uint numVetoLaye
   SingleBasket *singleBasket = new SingleBasket();
   std::vector<SingleBasket *> vsbVec;
   
-  std::string outfileName = "VetoBaskets_with_" + std::to_string(numVetoLayers) + "_VetoLayers_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
+  std::string outfileName = "../../Data_Analysis_Outputs/Baskets/Veto/VetoBaskets_with_" + std::to_string(numVetoLayers) + "_VetoLayers_" + ismran::GetFileNameWithoutExtension(GetBaseName(fDatafileName)) + ".root";
   TFile *basketFile = new TFile(outfileName.c_str(), "RECREATE");
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
@@ -632,6 +638,66 @@ std::vector<unsigned int> Analyzer_F::GetPeakPosVec_Direct(std::string peakPosFi
 std::vector<ScintillatorBar_F *> Analyzer_F::GetVectorOfScintillators()
 {
   return fVecOfScint_F;
+}
+
+std::pair<std::vector<SingleBasket *>, std::vector<SingleBasket *>> Analyzer_F::CleanBasket(std::vector<SingleBasket *> baskets)
+{
+  SingleBasket *singleBasketA = new SingleBasket();
+  SingleBasket *singleBasketB = new SingleBasket();
+  std::vector<SingleBasket *> preVec;
+  std::vector<SingleBasket *> postVec;
+
+  ULong64_t tStart = baskets[0]->GetBasketStartTime();
+  unsigned int basketVecSize = baskets.size();
+  
+  for(uint i=0; i<basketVecSize-1;i++){
+	  if(i%1000000==0){std::cout<<"Analyzing Basket: "<<i<<std::endl;}
+	  singleBasketA = new SingleBasket(*baskets[i]);
+	  singleBasketB = new SingleBasket(*baskets[i+1]);
+	  
+	  if(singleBasketA->GetBasketEnergy()>1.0 and singleBasketB->GetBasketEnergy()>1.0){
+		  preVec.push_back(new ismran::SingleBasket(*singleBasketA));
+		  postVec.push_back(new ismran::SingleBasket(*singleBasketB));
+	  }
+	  singleBasketA->clear();
+	  singleBasketB->clear();  
+  }
+  std::cout << "CleanedSBVec size : " << preVec.size() << std::endl;
+  return std::make_pair(preVec, postVec);
+}
+
+std::vector<SingleBasket *> Analyzer_F::MuonBasket(std::vector<SingleBasket *> baskets, std::string fname)
+{
+  SingleBasket *singleBasket = new SingleBasket();
+  std::vector<SingleBasket *> msbVec;
+  
+  TFile *MuonBasketFile = new TFile(fname.c_str(), "RECREATE");
+  MuonBasketFile->cd();
+  TTree *muonBasketTree = new TTree("muonBasketTree", "muonBasketTree");
+  muonBasketTree->Branch("Muon Baskets", "ismran::SingleBasket", &singleBasket);
+
+  ULong64_t tStart = baskets[0]->GetBasketStartTime();
+  unsigned int basketVecSize = baskets.size();
+  
+  for(uint i=0; i<basketVecSize;i++){
+	  if(i%1000000==0){std::cout<<"Analyzing Basket: "<<i<<std::endl;}
+	  singleBasket = new SingleBasket(*baskets[i]);
+	  
+	  double BE = singleBasket->GetBasketEnergy();
+	  singleBasket->SetBasketEnergy();
+	  if(BE != singleBasket->GetBasketEnergy()){std::cout<<"Setting Energy is Required: "<<(BE-singleBasket->GetBasketEnergy())/singleBasket->GetBasketEnergy()*100.0<<std::endl;}
+	  else{std::cout<<"Remove the energy check from MuonBasket()"<<std::endl;}
+	  
+	  if(singleBasket->isMuonBasket()){
+		  msbVec.push_back(new ismran::SingleBasket(*baskets[i]));
+		  muonBasketTree->Fill();
+	  }
+	  singleBasket->clear();  
+  }
+  std::cout << "MuonSBVec size : " << msbVec.size() << std::endl;
+  muonBasketTree->Write();
+  MuonBasketFile->Close();
+  return msbVec;
 }
 
 /*std::vector<SingleAnimal *> Analyzer_F::ReconstructAnimal(std::vector<SingleBasket *> baskets){

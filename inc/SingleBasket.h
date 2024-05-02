@@ -65,6 +65,7 @@ public:
   Double_t GetBasketEnergy();
   Double_t GetBasketBarEnergy(int evtIndx);
   bool isBarInBasket(ushort barIndx);
+  bool isMuonBasket();
   /*
    * Print functions
    */

@@ -32,6 +32,8 @@ int main(int argc, char *argv[]){
 	std::string dataFileName    = std::string(argv[2]);
 	fs::path calibFilePath		= std::string(argv[1]);
 	ushort numVetoLayers 		= 0;									//number of veto layers
+	std::string cleaning		= "no";
+	std::string checkMuons		= "yes";
 	
 	if(argv[3]){std::sscanf(argv[3], "%hd", &numVetoLayers); }	
 	
@@ -39,27 +41,46 @@ int main(int argc, char *argv[]){
 	ismran::Calibration Calib;
 	Calib.instance(calibFilePath.string());
 	
-	std::string datfile = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi"));
-	std::string baskettime = dataFileName.substr(dataFileName.find("ns_")-2,4);
-	std::string outfilepath = "../../Data_Analysis_Outputs/";
-	std::string xtype = "LogE";
-	std::string outfilename = outfilepath+"InterBasketTimeEnergySpectra_"+baskettime+"_Threshold_100keV_"+xtype+"_"+datfile;
-	std::string outCanvasname = outfilepath+"InterBasketTimeEnergySpectra_Canvas_"+baskettime+"_Threshold_100keV_"+xtype+"_"+datfile;
-	
-	//Reading and sorting events from file
+	//initializing vectors
 	std::vector<ismran::SingleBasket *> vecOfBaskets;	
-	std::vector<ismran::SingleBasket *> vecOfBasketsPostVeto;	
+	std::vector<ismran::SingleBasket *> vecOfBasketsPostVeto;
+	std::vector<ismran::SingleBasket *> vecOfMuonBaskets;
+	std::vector<ismran::SingleBasket *> vecOfCleanedPreBaskets;
+	std::vector<ismran::SingleBasket *> vecOfCleanedPostBaskets;	
 	
 	//Initialise the analyser and read baskets
 	ismran::Analyzer_F an;
 	vecOfBaskets = an.ReadBasket(dataFileName);
 	
+	//Defining File Names
+	std::string datfile = dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi"));
+	std::string baskettime = dataFileName.substr(dataFileName.find("ns_")-2,4);
+	std::string outfilepath = "../../Data_Analysis_Outputs/";
+	std::string xtype = "LogE";
+	int thres = ((int)an.GetBarEThreshold()/10)*10;
+	std::string outfilename = outfilepath+"InterBasketTimeEnergySpectra_"+baskettime+"ns_Threshold_"+std::to_string(thres)+"keV_"+xtype+"_"+datfile;
+	std::string outCanvasname = outfilepath+"InterBasketTimeEnergySpectra_Canvas_"+baskettime+"ns_Threshold_"+std::to_string(thres)+"keV_"+xtype+"_"+datfile;
+	std::string muonFileName = outfilepath+"Baskets/Muons/MuonBasket_"+baskettime+"ns_Threshold_"+std::to_string(thres)+"keV_"+datfile;
+	
+	unsigned int vetoedbasketVecSize = 0;
 	unsigned int basketVecSize = vecOfBaskets.size();
 	std::cout<<"basketVecSize "<<basketVecSize<<std::endl;
 	
-	if(argc==4 and numVetoLayers!=0){vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);}
-	unsigned int vetoedbasketVecSize = vecOfBasketsPostVeto.size();
-	std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
+	if(argc==4 and numVetoLayers!=0){
+		vecOfBasketsPostVeto = an.ReconstructVetoedBasket(numVetoLayers,vecOfBaskets);
+		vetoedbasketVecSize = vecOfBasketsPostVeto.size();
+		std::cout<<"VetoedBasketVecSize "<<vetoedbasketVecSize<<std::endl;
+	}
+	
+	if(cleaning == "yes")
+	{
+		auto [vecOfCleanedPreBaskets, vecOfCleanedPostBaskets] = an.CleanBasket(vecOfBaskets);
+	}
+	
+	if(checkMuons =="yes")
+	{
+		vecOfMuonBaskets = an.MuonBasket(vecOfBaskets,muonFileName);
+	}
 	
 	//Generating plots
 	TCanvas *c1 = new TCanvas("c1","",10,10,720,800);

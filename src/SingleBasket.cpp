@@ -155,6 +155,16 @@ namespace ismran
 	  }
 	  return isbar;
   }
+  
+  bool SingleBasket::isMuonBasket(){
+	  double avBasketEnergy = GetBasketEnergy()/size();
+	  if(size() >= 5 and (avBasketEnergy >= 15.0 and avBasketEnergy <= 25.0)){
+		  return true;
+	  }else{
+		  return false;
+	  }
+  }
+		  
   std::vector<ushort*> SingleBasket::GetBasketNeighbours() const {return fVecOfNeighbours;}
   //////////////////////////////////////////////////////////////////////
   //Setters

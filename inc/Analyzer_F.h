@@ -27,6 +27,7 @@ private:
   std::vector<ScintillatorBar_F*> fVecOfScint_F;
   unsigned int fFileTime;
   PairFinder pf;
+  double BarEThreshold;
 
 public:
   Analyzer_F();
@@ -43,11 +44,16 @@ public:
   std::vector<SingleBasket *> ReconstructBasket(uint basketdT);
   std::vector<SingleBasket *> ReconstructVetoedBasket(uint numVetoLayer, std::vector<SingleBasket *> baskets);
   std::vector<SingleAnimal *> ReconstructAnimal(std::vector<SingleBasket *> baskets);
+  std::pair<std::vector<SingleBasket *>, std::vector<SingleBasket *>> CleanBasket(std::vector<SingleBasket *> baskets);
+  std::vector<SingleBasket *> MuonBasket(std::vector<SingleBasket *> baskets, std::string fname);
   //std::vector<std::shared_ptr<SingleMuonTrack>> ReconstructMuonTrack();
   //std::vector<SingleMuonTrack *> ReconstructMuonTrack();
   unsigned int GetFileTime()const;
   //std::vector<unsigned int> GetPeakPosVec(std::string peakPosFileLoc="/home/rsehgal/myAmbar/MuonSinglePointCalibration");
   std::vector<unsigned int> GetPeakPosVec(std::string peakPosFileLoc=".");
+  
+  double GetBarEThreshold(){return BarEThreshold;}
+  
 #ifdef FOLDED_DATA
   std::vector<unsigned int> GetPeakPosVec_Direct(std::string peakPosFile="MuonPeak.root");
 #else
