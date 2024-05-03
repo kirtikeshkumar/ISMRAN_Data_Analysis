@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <utility>
 #include "PairFinder.h"
 #include "HardwareNomenclature.h"
 namespace ismran {
@@ -44,7 +45,8 @@ public:
   std::vector<SingleBasket *> ReconstructBasket(uint basketdT);
   std::vector<SingleBasket *> ReconstructVetoedBasket(uint numVetoLayer, std::vector<SingleBasket *> baskets);
   std::vector<SingleAnimal *> ReconstructAnimal(std::vector<SingleBasket *> baskets);
-  std::pair<std::vector<SingleBasket *>, std::vector<SingleBasket *>> CleanBasket(std::vector<SingleBasket *> baskets);
+  std::pair<std::vector<SingleBasket *>, std::vector<SingleBasket *>> CleanBasket(std::vector<SingleBasket *> baskets, std::string fname);
+  std::vector<uint> CleanBasketIndex(std::vector<SingleBasket *> baskets, std::string fname);
   std::vector<SingleBasket *> MuonBasket(std::vector<SingleBasket *> baskets, std::string fname);
   //std::vector<std::shared_ptr<SingleMuonTrack>> ReconstructMuonTrack();
   //std::vector<SingleMuonTrack *> ReconstructMuonTrack();

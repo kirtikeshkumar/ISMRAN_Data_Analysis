@@ -107,9 +107,9 @@ namespace ismran
       scintBarVec[i]->Print();
     }
     std::cout<<"NEIGHBOURS"<<std::endl;
-    for (unsigned int i = 0; i < fVecOfNeighbours.size(); i++) {
+    /*for (unsigned int i = 0; i < fVecOfNeighbours.size(); i++) {
       std::cout<<*(fVecOfNeighbours[i])<<" ";
-    }
+    }*/
     std::cout << std::endl;
     std::cout << "Number of bars in Basket is: " << scintBarVec.size() << std::endl;
     std::cout << "Total Energy of Basket is: " << GetBasketEnergy() << std::endl;
@@ -158,7 +158,7 @@ namespace ismran
   
   bool SingleBasket::isMuonBasket(){
 	  double avBasketEnergy = GetBasketEnergy()/size();
-	  if(size() >= 5 and (avBasketEnergy >= 15.0 and avBasketEnergy <= 25.0)){
+	  if(size() >= 5 and (avBasketEnergy >= 10.0 and avBasketEnergy <= 30.0)){
 		  return true;
 	  }else{
 		  return false;

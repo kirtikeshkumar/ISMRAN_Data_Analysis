@@ -14,6 +14,7 @@
 #include "PairFinder.h"
 #include "TreeEntry.h"
 #include "colors.h"
+
 using namespace std;
 namespace ismran {
 
@@ -640,8 +641,13 @@ std::vector<ScintillatorBar_F *> Analyzer_F::GetVectorOfScintillators()
   return fVecOfScint_F;
 }
 
-std::pair<std::vector<SingleBasket *>, std::vector<SingleBasket *>> Analyzer_F::CleanBasket(std::vector<SingleBasket *> baskets)
+std::pair<std::vector<SingleBasket *>, std::vector<SingleBasket *>> Analyzer_F::CleanBasket(std::vector<SingleBasket *> baskets, std::string fname)
 {
+  std::string fileappend = fname.substr(fname.find("_Basket"),fname.length()-fname.find("_Basket"));
+  std::string filepath = fname.substr(0,fname.find("_Pre"));
+  std::string postFile = filepath + "_PostEvent" + fileappend;
+  //std::cout<<postFile<<std::endl;
+  
   SingleBasket *singleBasketA = new SingleBasket();
   SingleBasket *singleBasketB = new SingleBasket();
   std::vector<SingleBasket *> preVec;
@@ -650,20 +656,102 @@ std::pair<std::vector<SingleBasket *>, std::vector<SingleBasket *>> Analyzer_F::
   ULong64_t tStart = baskets[0]->GetBasketStartTime();
   unsigned int basketVecSize = baskets.size();
   
+  bool AETC; 	//Basket "A" "E"nergy "T"hreshold "C"ut
+  bool BETC; 	//Basket "B" "E"nergy "T"hreshold "C"ut
+  bool AMuC;	//Basket "A" "Mu"on "C"ut
+  bool BMuC;	//Basket "B" "Mu"on "C"ut
+  bool AMultC;	//Basket "A" "Mult"iplicity "C"ut
+  bool BMultC;	//Basket "B" "Mult"iplicity "C"ut
+  
   for(uint i=0; i<basketVecSize-1;i++){
 	  if(i%1000000==0){std::cout<<"Analyzing Basket: "<<i<<std::endl;}
 	  singleBasketA = new SingleBasket(*baskets[i]);
 	  singleBasketB = new SingleBasket(*baskets[i+1]);
 	  
-	  if(singleBasketA->GetBasketEnergy()>1.0 and singleBasketB->GetBasketEnergy()>1.0){
+	  /*if(i==1){
+		  singleBasketA->Print();
+		  singleBasketB->Print();
+	  }*/
+	  
+	  AETC = (singleBasketA->GetBasketEnergy() > 0.7) and (singleBasketA->GetBasketEnergy() < 1.3); 
+	  BETC = (singleBasketB->GetBasketEnergy() > 6.0) and (singleBasketB->GetBasketEnergy() < 10.0); 	
+	  AMuC = singleBasketA->isMuonBasket();			
+	  BMuC = singleBasketB->isMuonBasket();	
+	  AMultC = singleBasketA->size() < 3;
+	  BMultC = singleBasketB->size() > 2;
+	  
+	  if(AETC and BETC and !AMuC and !BMuC and AMultC and BMultC){
 		  preVec.push_back(new ismran::SingleBasket(*singleBasketA));
 		  postVec.push_back(new ismran::SingleBasket(*singleBasketB));
 	  }
 	  singleBasketA->clear();
 	  singleBasketB->clear();  
   }
+  /*
+  std::cout<<"_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+"<<std::endl;
+  preVec[0]->Print();
+  std::cout<<"_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+"<<std::endl;
+  postVec[0]->Print();
+  std::cout<<"_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+"<<std::endl;
+  */
   std::cout << "CleanedSBVec size : " << preVec.size() << std::endl;
   return std::make_pair(preVec, postVec);
+}
+
+std::vector<uint> Analyzer_F::CleanBasketIndex(std::vector<SingleBasket *> baskets, std::string fname)
+{
+  std::string fileappend = fname.substr(fname.find("_Basket"),fname.length()-fname.find("_Basket"));
+  std::string filepath = fname.substr(0,fname.find("_Pre"));
+  std::string postFile = filepath + "_PostEvent" + fileappend;
+  //std::cout<<postFile<<std::endl;
+  
+  SingleBasket *singleBasketA = new SingleBasket();
+  SingleBasket *singleBasketB = new SingleBasket();
+  std::vector<uint> preVec;
+
+  ULong64_t tStart = baskets[0]->GetBasketStartTime();
+  unsigned int basketVecSize = baskets.size();
+  
+  bool AETC; 	//Basket "A" "E"nergy "T"hreshold "C"ut
+  bool BETC; 	//Basket "B" "E"nergy "T"hreshold "C"ut
+  bool AMuC;	//Basket "A" "Mu"on "C"ut
+  bool BMuC;	//Basket "B" "Mu"on "C"ut
+  bool AMultC;	//Basket "A" "Mult"iplicity "C"ut
+  bool BMultC;	//Basket "B" "Mult"iplicity "C"ut
+  
+  //uint j = 0;
+  uint i = 0;
+  
+  for(i=0; i<basketVecSize-1;i++){
+	  if(i%1000000==0){std::cout<<"Analyzing Basket: "<<i<<std::endl;}
+	  singleBasketA = new SingleBasket(*baskets[i]);
+	  singleBasketB = new SingleBasket(*baskets[i+1]);
+	  
+	  /*if(i==1){
+		  singleBasketA->Print();
+		  singleBasketB->Print();
+	  }*/
+	  
+	  AETC = (singleBasketA->GetBasketEnergy() > 0.7); 
+	  BETC = (singleBasketB->GetBasketEnergy() > 6.0) and (singleBasketB->GetBasketEnergy() < 10.0);
+	  AMuC = singleBasketA->isMuonBasket();			
+	  BMuC = singleBasketB->isMuonBasket();
+	  AMultC = singleBasketA->size() < 3;
+	  BMultC = singleBasketB->size() > 2;
+	  
+	  if(AETC and BETC and !AMuC and !BMuC and AMultC and BMultC){
+		  preVec.push_back(i);
+	  }
+	  singleBasketA->clear();
+	  singleBasketB->clear();  
+  }
+  
+  std::cout<<"_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+"<<std::endl;
+  std::cout<<preVec[0]<<std::endl;
+  std::cout<<"_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+"<<std::endl;
+  
+  std::cout << "CleanedSBVec size : " << preVec.size() << std::endl;
+  return preVec;
 }
 
 std::vector<SingleBasket *> Analyzer_F::MuonBasket(std::vector<SingleBasket *> baskets, std::string fname)
@@ -683,10 +771,10 @@ std::vector<SingleBasket *> Analyzer_F::MuonBasket(std::vector<SingleBasket *> b
 	  if(i%1000000==0){std::cout<<"Analyzing Basket: "<<i<<std::endl;}
 	  singleBasket = new SingleBasket(*baskets[i]);
 	  
-	  double BE = singleBasket->GetBasketEnergy();
-	  singleBasket->SetBasketEnergy();
-	  if(BE != singleBasket->GetBasketEnergy()){std::cout<<"Setting Energy is Required: "<<(BE-singleBasket->GetBasketEnergy())/singleBasket->GetBasketEnergy()*100.0<<std::endl;}
-	  else{std::cout<<"Remove the energy check from MuonBasket()"<<std::endl;}
+	  //double BE = singleBasket->GetBasketEnergy();
+	  //singleBasket->SetBasketEnergy();
+	  //if(BE != singleBasket->GetBasketEnergy()){std::cout<<"Setting Energy is Required: "<<(BE-singleBasket->GetBasketEnergy())/singleBasket->GetBasketEnergy()*100.0<<std::endl;}
+	  //else{std::cout<<"Remove the energy check from MuonBasket()"<<std::endl;}
 	  
 	  if(singleBasket->isMuonBasket()){
 		  msbVec.push_back(new ismran::SingleBasket(*baskets[i]));
