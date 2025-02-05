@@ -19,9 +19,11 @@
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include <TApplication.h>
 #include <TFile.h>
 #include <TString.h>
+#include <TStyle.h>
 #include <filesystem>
 #include <iostream>
 namespace fs = std::filesystem;
@@ -36,8 +38,8 @@ int main(int argc, char *argv[]) {
   ushort numVetoLayers = 0; // number of veto layers
   uint basketdT = 0;        // max duration of each basket.
                             // if basketdT = 0, baskets are made based on time
-                     // difference between events
-  double EThres = 100.0; // threshold energy for baskets
+                            // difference between events
+  double EThres = 100.0;    // threshold energy for baskets in keV
 
   if (argv[3]) {
     std::sscanf(argv[3], "%d", &basketdT);
@@ -75,40 +77,177 @@ int main(int argc, char *argv[]) {
   std::cout << "VetoedBasketVecSize " << vetoedbasketVecSize << std::endl;
 
   ////Generating plots
-  TCanvas *c1 = new TCanvas("c1", "", 10, 10, 720, 800);
-  c1->cd(1);
-  gStyle->SetPalette(kRainBow);
+  TCanvas *c1 = new TCanvas("c1", "", 10, 5, 1900, 950);
+  c1->Draw();
+  c1->cd();
+  gStyle->SetOptStat(0);
+  gStyle->SetPalette(73);
+  c1->cd();
+
+  //// For 2d hits with Pre and Post Event
+  /*TH2 *H2DPre = new TH2F("H2DPre", "2D Hits", 9, 0, 9, 10, 0, 10);
+  TH2 *H2DPost = new TH2F("H2DPost", "2D Hits", 9, 0, 9, 10, 0, 10);
+  std::vector<ismran::ScintillatorBar_F *> basketscint;
+  ushort indxb;
+  Double_t levels[701];
+  // std::cout << sizeof(levels) << " " << sizeof(levels[0]) << sizeof(levels) /
+  // sizeof(levels[0]) << std::endl;
+  for (int i = 0; i < sizeof(levels) / sizeof(levels[0]); i++) {
+    levels[i] = i * 0.1;
+  }
+  float basketEnergy;
+  int numBars;
+  c1->cd();
+  float logDelT;
+  for (int i = 100000; i < basketVecSize - 1; i++) {
+    logDelT = log10(vecOfBaskets[i + 1]->GetBasketStartTime() -
+                    vecOfBaskets[i]->GetBasketEndTime());
+    if (logDelT > 5.3 and logDelT < 5.6 and
+        vecOfBaskets[i]->GetBasketEnergy() > 125) {
+
+      TPad *c1_1 = new TPad("c1_1", "PreEvt", 0.01, 0.01, 0.49, 0.99);
+      TPad *c1_2 = new TPad("c1_2", "PostEvt", 0.51, 0.01, 0.99, 0.99);
+      c1_1->Draw();
+      c1_2->Draw();
+      c1->Update();
+
+      basketscint = vecOfBaskets[i]->GetBasket();
+
+      c1_1->cd();
+
+      for (int j = 0; j < basketscint.size(); j++) {
+        indxb = basketscint[j]->GetBarIndex();
+        H2DPre->Fill(indxb / 10 + 0.5, indxb % 10 + 0.5,
+                     vecOfBaskets[i]->GetBasketBarEnergy(j));
+      }
+
+      basketEnergy = vecOfBaskets[i]->GetBasketEnergy();
+      numBars = basketscint.size();
+      H2DPre->SetTitle(Form("%d E: %.2f B: %d", i, basketEnergy, numBars));
+      H2DPre->SetContour(sizeof(levels) / sizeof(levels[0]), levels);
+      H2DPre->Draw("colz");
+
+      basketscint = vecOfBaskets[i + 1]->GetBasket();
+
+      c1_2->cd();
+
+      for (int j = 0; j < basketscint.size(); j++) {
+        indxb = basketscint[j]->GetBarIndex();
+        H2DPost->Fill(indxb / 10 + 0.5, indxb % 10 + 0.5,
+                      vecOfBaskets[i + 1]->GetBasketBarEnergy(j));
+      }
+
+      basketEnergy = vecOfBaskets[i + 1]->GetBasketEnergy();
+      numBars = basketscint.size();
+      H2DPost->SetTitle(Form("%d E: %.2f B: %d", i + 1, basketEnergy, numBars));
+      H2DPost->SetContour(sizeof(levels) / sizeof(levels[0]), levels);
+      H2DPost->Draw("colz");
+
+      c1->Update();
+
+      if (i > 500000) {
+        break;
+      }
+      c1->SaveAs(
+          ("../Plots/CorrelatedLowTimeEvents_Band_5dot42/Basket_PrePost_" +
+           std::to_string(i) + ".jpg")
+              .c_str());
+
+      c1->Clear();
+    }
+    H2DPre->Reset();
+    H2DPost->Reset();
+  }
+  fApp->Run();*/
 
   //// For 2d hits
-  ///*TH2* H2D = new TH2F("H2D", "2D Hits", 9,0,9, 10,0,10);
-  // std::vector<ismran::ScintillatorBar_F *> basketscint;
-  // H2D->SetStats(0);
-  ////char* histsavename="../Plots/Basket"
+  /*TH2 *H2D = new TH2F("H2D", "2D Hits", 9, 0, 9, 10, 0, 10);
+  std::vector<ismran::ScintillatorBar_F *> basketscint;
+  H2D->SetStats(0);
+  // char* histsavename="../Plots/Basket"
 
-  // ushort indxb;
-  // Double_t levels[501];
-  // for(int i=0;i<sizeof(levels)/sizeof(levels[0]);i++){
-  // levels[i]=i*0.1;
-  //}
-  // for(int i=0; i<vecOfBaskets.size(); i++){
-  // if(vecOfBaskets[i]->size()>=2){
-  // basketscint = vecOfBaskets[i]->GetBasket();
-  // for(int j=0;j<basketscint.size();j++){
-  // indxb = basketscint[j]->GetBarIndex();
-  // H2D->Fill(indxb/10+0.5,indxb%10+0.5,vecOfBaskets[i]->GetBasketBarEnergy(j));
-  //}
-  ////break;
-  // H2D->GetXaxis()->SetTitle("X");
-  // H2D->GetYaxis()->SetTitle("Y");
-  // H2D->SetContour(sizeof(levels)/sizeof(levels[0]),levels);
-  ////H2D->Draw("ARR");
-  // H2D->Draw("colz");
-  ////H2D->Draw("TEXT");
-  // c1->SaveAs(("../Plots/Basket"+std::to_string(i)+".jpg").c_str());
-  //}
-  // c1->Clear();
-  // H2D->Reset();
-  //}*/
+  ushort indxb;
+  Double_t levels[501];
+  for (int i = 0; i < sizeof(levels) / sizeof(levels[0]); i++) {
+    levels[i] = i * 0.1;
+  }
+  for (int i = 0; i < vecOfBaskets.size(); i++) {
+    if (vecOfBaskets[i]->size() >= 2) {
+      basketscint = vecOfBaskets[i]->GetBasket();
+      for (int j = 0; j < basketscint.size(); j++) {
+        indxb = basketscint[j]->GetBarIndex();
+        H2D->Fill(indxb / 10 + 0.5, indxb % 10 + 0.5,
+                  vecOfBaskets[i]->GetBasketBarEnergy(j));
+      }
+      // break;
+      H2D->GetXaxis()->SetTitle("X");
+      H2D->GetYaxis()->SetTitle("Y");
+      H2D->SetContour(sizeof(levels) / sizeof(levels[0]), levels);
+      // H2D->Draw("ARR");
+      H2D->Draw("colz");
+      // H2D->Draw("TEXT");
+      c1->SaveAs(("../Plots/Basket" + std::to_string(i) + ".jpg").c_str());
+    }
+    c1->Clear();
+    H2D->Reset();
+  }*/
+
+  //// For 3D Hits Density
+  TH1 *hMult = new TH1I("hMult", "Multiplicity of 420 keV", 91, 0, 90);
+  TH3 *H3Ddensity =
+      new TH3I("H3Ddensity", "3D Hits", 9, 0, 9, 10, 0, 10, 21, -20000, 20000);
+  std::vector<ismran::ScintillatorBar_F *> basketscint;
+  H3Ddensity->SetStats(0);
+  // char* histsavename="../Plots/Basket"
+
+  ushort indxb;
+  for (int i = 0; i < vecOfBaskets.size(); i++) {
+    // if (vecOfBaskets[i]->size() >= 2) {
+    basketscint = vecOfBaskets[i]->GetBasket();
+    if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) < 0.012) {
+      hMult->Fill(basketscint.size());
+      for (int j = 0; j < basketscint.size(); j++) {
+        indxb = basketscint[j]->GetBarIndex();
+        H3Ddensity->Fill(indxb / 10 + 0.5, indxb % 10 + 0.5,
+                         basketscint[j]->GetDelT());
+      }
+    }
+    // break;
+  }
+  H3Ddensity->GetXaxis()->SetTitle("X");
+  H3Ddensity->GetYaxis()->SetTitle("Y");
+  // H2D->Draw("ARR");
+  H3Ddensity->Draw("colz");
+  // H2D->Draw("TEXT");
+  std::string fname = dataFileName.substr(
+      dataFileName.find("ISMRAN_digi"),
+      dataFileName.length() - dataFileName.find("ISMRAN_digi") - 5);
+  TFile f(("../../Data_Analysis_Outputs/"
+           "hMult_420keV_BasketSz_" +
+           std::to_string(basketdT / 1000) + "ns_Threshold_" +
+           std::to_string(static_cast<int>(EThres)) + "keV_" + fname + ".root")
+              .c_str(),
+          "RECREATE");
+  hMult->Write();
+  f.Close();
+  c1->SaveAs(("../../Data_Analysis_Outputs/"
+              "Basket_Density_420KeV_3D_Canvas_" +
+              std::to_string(basketdT / 1000) + "ns_Threshold_" +
+              std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname +
+              "1.root")
+                 .c_str()); // VLE2_Linear
+  TFile myfile(("../../Data_Analysis_Outputs/"
+                "Basket_Density_420KeV_3D_" +
+                std::to_string(basketdT / 1000) + "ns_Threshold_" +
+                std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname +
+                "1.root")
+                   .c_str(),
+               "RECREATE");
+  H3Ddensity->Write();
+  myfile.Close();
+  // }
+  c1->Clear();
+  H3Ddensity->Reset();
 
   //// For energy Spectra
   ///*TH1* HEUnVeto = new TH1D("HEUnVeto", "", 501, 0, 500);
@@ -119,7 +258,7 @@ int main(int argc, char *argv[]) {
   // ULong64_t delTBaskets;
   // for(int i=0; i<basketVecSize-1; i++){
   ////delTBaskets =
-  ///vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime();
+  /// vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime();
   ////if(log10(delTBaskets)>=5.2 and log10(delTBaskets)<=6.6){
   // HEUnVeto->Fill(vecOfBaskets[i]->GetBasketEnergy());
   ////}
@@ -130,10 +269,9 @@ int main(int argc, char *argv[]) {
 
   ////for(int i=0; i<vetoedbasketVecSize-1; i++){
   ////	delTBaskets =
-  ///vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime();
+  /// vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime();
   ////	if(log10(delTBaskets)>=2.5 and log10(delTBaskets)<=5.0){
-  ////		HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
-  ////	}
+  //// HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy()); /	}
   ////HEVeto->Fill(vecOfBasketsPostVeto[i]->GetBasketEnergy());
   ////}
 
@@ -161,43 +299,64 @@ int main(int argc, char *argv[]) {
   // fApp->Run();*/
 
   ////For Time Difference
-  // TH1* hTime = new TH1D("hTime", "", 601, 0.0, 12);
-  // hTime->SetStats(0);
-  // hTime->SetLineColor(kGreen);
+  /*c1->cd();
+  TH1 *hTime = new TH1D("hTime", "", 601, 0.0, 12);
+  hTime->SetStats(0);
+  hTime->SetLineColor(kGreen);
 
-  // TH1* hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12);
-  // hTimeVeto->SetStats(0);
-  // hTimeVeto->SetLineColor(kRed);
+  TH1 *hTimeVeto = new TH1D("hTimeVeto", "", 601, 0.0, 12);
+  hTimeVeto->SetStats(0);
+  hTimeVeto->SetLineColor(kRed);
 
-  TH2 *hTimeEnergy = new TH2D("hTimeEnergy", "", 2501, 0.0, 2.5, 601, 0.0, 12);
-  ////TH2* hEnergyMult = new TH2D("hEnergyMult", "", 2501, 0, 2.5, 101, 0.0,
-  ///100);
+  TH2 *hTimeEnergy = new TH2D("hTimeEnergy", "", 2501, -1, 2.5, 601, 0.0, 12);
+  // TH2* hEnergyMult = new TH2D("hEnergyMult", "", 2501, 0, 2.5, 101, 0.0,
+  // 100);
 
   std::cout << "histograms created" << std::endl;
   std::cout << vecOfBaskets.size() << std::endl;
+
+  double preEvtTime = 0;
+  double postEvtTime = 0;
+
   for (int i = 0; i < basketVecSize - 1; i++) {
     // if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and
     // vecOfBaskets[i]->GetBasketEnergy()<10.0){
-    // hTime->Fill(log10(vecOfBaskets[i+1]->GetBasketStartTime()-vecOfBaskets[i]->GetBasketEndTime()));
-    if (argc < 6 or numVetoLayers == 0) {
-      hTimeEnergy->Fill(log10(vecOfBaskets[i]->GetBasketEnergy()),
-                        log10(vecOfBaskets[i + 1]->GetBasketStartTime() -
-                              vecOfBaskets[i]->GetBasketEndTime()));
-      // hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()),
-      // (vecOfBaskets[i]->size()));
+    //
+    // hTime->Fill(log10(vecOfBaskets[i + 1]->GetBasketStartTime() -
+    // vecOfBaskets[i]->GetBasketEndTime()));
+    if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) < 0.012) {
+      // std::cout << "now adding" << std::endl;
+      preEvtTime = postEvtTime;
+      postEvtTime = vecOfBaskets[i]->GetBasketStartTime();
+      hTime->Fill(log10(postEvtTime - preEvtTime));
     }
+    // if (argc < 6 or numVetoLayers == 0) {
+    //   hTimeEnergy->Fill(log10(vecOfBaskets[i + 1]->GetBasketEnergy()),
+    //                     log10(vecOfBaskets[i + 1]->GetBasketStartTime() -
+    //                           vecOfBaskets[i]->GetBasketEndTime()));
+    //   //if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) <
+    //   0.12)
+    //   //{
+    //   //  hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()),
+    //   //                    (vecOfBaskets[i]->size()));
+    //   //}
+    // }
     //}
   }
-  // std::cout<<"histogram hTime Filled"<<std::endl;
-  // if(argc==6 and numVetoLayers!=0){
-  // for(int i=0; i<vetoedbasketVecSize-1; i++){
-  ////hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
-  // hTimeEnergy->Fill(log10(vecOfBasketsPostVeto[i+1]->GetBasketEnergy()),
-  // log10(vecOfBasketsPostVeto[i+1]->GetBasketStartTime()-vecOfBasketsPostVeto[i]->GetBasketEndTime()));
-  //}
-  // std::cout<<"histogram hTimeVeto Filled"<<std::endl;
-  //}
-  ///*gPad->SetLogy();
+
+  std::cout << "histogram hTime Filled" << std::endl;
+  if (argc == 6 and numVetoLayers != 0) {
+    for (int i = 0; i < vetoedbasketVecSize - 1; i++) {
+      //
+      hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i + 1]->GetBasketStartTime()
+  - vecOfBasketsPostVeto[i]->GetBasketEndTime())); hTimeEnergy->Fill(
+          log10(vecOfBasketsPostVeto[i + 1]->GetBasketEnergy()),
+          log10(vecOfBasketsPostVeto[i + 1]->GetBasketStartTime() -
+                vecOfBasketsPostVeto[i]->GetBasketEndTime()));
+    }
+    std::cout << "histogram hTimeVeto Filled" << std::endl;
+  }
+  // gPad->SetLogy();
   // hTime->GetXaxis()->SetTitle("log10(delT)");
   // hTime->GetYaxis()->SetTitle("Counts");
   // hTime->Draw("C");
@@ -208,32 +367,38 @@ int main(int argc, char *argv[]) {
   // leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
   // leg->Draw();
   // std::string fname =
-  // dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
-  // c1->SaveAs(("../../Data_Analysis_Outputs/Canvas_InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str());
+  //
+  dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
+  //
+  c1->SaveAs(("../../Data_Analysis_Outputs/Canvas_InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str());
   // TFile
-  // myfile(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str(),"RECREATE");
+  //
+  myfile(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str(),"RECREATE");
   // hTime->Write();
-  // myfile.Close();*/
+  // myfile.Close();
 
-  ////hTimeEnergy->Smooth();
+  // hTimeEnergy->Smooth();
   hTimeEnergy->DrawCopy("colz");
   std::string fname = dataFileName.substr(
       dataFileName.find("ISMRAN_digi"),
       dataFileName.length() - dataFileName.find("ISMRAN_digi") - 5);
-  if (argc < 6 or numVetoLayers == 0) {
-    c1->SaveAs(("../../Data_Analysis_Outputs/"
-                "PreEvent_InterBasketTimeEnergySpectra_Canvas_" +
+  TFile f(("../../Data_Analysis_Outputs/"
+           "hTime_BasketSz_" +
+           std::to_string(basketdT / 1000) + "ns_Threshold_" +
+           std::to_string(static_cast<int>(EThres)) + "keV_" + fname +
+  ".root") .c_str(), "RECREATE"); hTime->Write(); f.Close(); if (argc < 6 or
+  numVetoLayers == 0) { c1->SaveAs(("../../Data_Analysis_Outputs/"
+                "PostEvent_InterBasketTimeEnergySpectra_Canvas_" +
                 std::to_string(basketdT / 1000) + "ns_Threshold_" +
-                std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname +
-                "1.root")
-                   .c_str()); // VLE2_Linear
-    TFile myfile(
-        ("../../Data_Analysis_Outputs/PreEvent_InterBasketTimeEnergySpectra_" +
-         std::to_string(basketdT / 1000) + "ns_Threshold_" +
-         std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname +
-         "1.root")
-            .c_str(),
-        "RECREATE");
+                std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname
+  + "1.root") .c_str()); // VLE2_Linear TFile
+  myfile(("../../Data_Analysis_Outputs/"
+                  "PostEvent_InterBasketTimeEnergySpectra_" +
+                  std::to_string(basketdT / 1000) + "ns_Threshold_" +
+                  std::to_string(static_cast<int>(EThres)) + "keV_LogE_" +
+                  fname + "1.root")
+                     .c_str(),
+                 "RECREATE");
     hTimeEnergy->Write();
     myfile.Close();
   } else if (argc == 6 and numVetoLayers != 0) {
@@ -254,7 +419,7 @@ int main(int argc, char *argv[]) {
                  "RECREATE");
     hTimeEnergy->Write();
     myfile.Close();
-  }
+  }*/
 
   ///*hEnergyMult->DrawCopy("colz");
   // std::string fname =
