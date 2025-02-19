@@ -183,6 +183,8 @@ void Analyzer_F::LoadData(unsigned int numOfEvents, double EThreshold) {
   UInt_t fTime;
   UInt_t fQlong;
   Int_t fDelt;
+  UShort_t barDelTLimit =
+      30000; // this is the time for event to occur in a single bar.
 
   TTree *tr = (TTree *)fp->Get("ftree");
 
@@ -218,9 +220,10 @@ void Analyzer_F::LoadData(unsigned int numOfEvents, double EThreshold) {
 
     unsigned short int maxU_16bits = USHRT_MAX;
     UInt_t maskingVal = maxU_16bits;
-    if ((fQlong & maskingVal) == 0 or
-        (fQlong >> 16) ==
-            0) { // events where QFar or QNear is 0 must be neglected
+    if ((fQlong & maskingVal) == 0 or (fQlong >> 16) == 0 or
+        fDelt >= barDelTLimit) { // events where QFar or QNear is 0 must be
+                                 // neglected events where single bar takes
+                                 // longer than barDelTLimit to be neglected
       // properev=false;
       badcounter += 1;
     }
@@ -232,7 +235,7 @@ void Analyzer_F::LoadData(unsigned int numOfEvents, double EThreshold) {
     ScintillatorBar_F *sbar =
         new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt);
     double energ = sbar->GetQMeanCorrected();
-    if (energ >= EThreshold) {
+    if (energ >= EThreshold && fDelt <= barDelTLimit) {
       fVecOfScint_F.push_back(
           new ScintillatorBar_F(iev, fBrCh, fQlong, fTstamp, fTime, fDelt));
     }
@@ -366,7 +369,7 @@ std::vector<SingleMuonTrack *> Analyzer_F::ReconstructMuonTrack() {
 }
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructBasket() {
-  std::cout << "Going to Create Baskets based on delT between events"
+  /*std::cout << "Going to Create Baskets based on delT between events"
             << std::endl;
   std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(),
             CompareTimestampScintillator);
@@ -410,7 +413,8 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket() {
       // std::cout<<" Basket Energy Is
       // "<<singleBasket->GetBasketEnergy()<<std::endl; singleBasket->clear();
       properev = true;
-      // std::cout<<"________________________________________________________"<<std::endl;
+      //
+  std::cout<<"________________________________________________________"<<std::endl;
       singleBasket->push_back(fVecOfScint_F[i]);
       tStart = fVecOfScint_F[i]->GetTStampSmall();
     }
@@ -419,7 +423,7 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket() {
   std::cout << "SBVec size : " << sbVec.size() << std::endl;
   basketTree->Write();
   basketFile->Close();
-  return sbVec;
+  return sbVec;*/
 }
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT) {

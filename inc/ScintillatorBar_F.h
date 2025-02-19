@@ -10,13 +10,13 @@
 
 #include "includes.hh"
 
-//#include "PsBar.h"
-//#include "Point3D.h"
+// #include "PsBar.h"
+// #include "Point3D.h"
 #include "Calibration.h"
 
 #pragma once
 #include <TROOT.h>
-//#include "Point3D.h"
+// #include "Point3D.h"
 class TH1F;
 
 namespace ismran {
@@ -29,11 +29,10 @@ private:
   ULong64_t fTstamp; // DAQ timestamp
   UInt_t fTime;      // Wall clock time
   Int_t fDelt;       // Time diff between left and right PMT
-  
-  //Storing the event no. corresponding to TTree
+
+  // Storing the event no. corresponding to TTree
   ULong64_t fEvNo;
 
-  
   UInt_t fQnear;
   UInt_t fQfar;
 
@@ -41,17 +40,17 @@ private:
   ushort fBrCh;
 #endif
 
-
 public:
-  
   ScintillatorBar_F();
   ScintillatorBar_F(unsigned int bIndex);
   // Required copy constructor
   ScintillatorBar_F(const ScintillatorBar_F &sbar);
-  ScintillatorBar_F(ULong64_t evNo,ushort barIndex, UInt_t qlong, ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
-  ScintillatorBar_F(ushort barIndex, UInt_t qlong, ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
-  ScintillatorBar_F(ushort barIndex, UInt_t qnear, UInt_t qfar, ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
-  
+  ScintillatorBar_F(ULong64_t evNo, ushort barIndex, UInt_t qlong,
+                    ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
+  ScintillatorBar_F(ushort barIndex, UInt_t qlong, ULong64_t tstamp,
+                    UInt_t wtime, Int_t deltstamp);
+  ScintillatorBar_F(ushort barIndex, UInt_t qnear, UInt_t qfar,
+                    ULong64_t tstamp, UInt_t wtime, Int_t deltstamp);
 
   // Functions to get the Hit Position
   /*ismran::Point3D *EstimateHitPosition();
@@ -67,7 +66,7 @@ public:
   ushort GetLayerIndex();
   ushort GetBarIndexInLayer();
   std::vector<ushort *> GetNeighbourIndx();
-  ULong64_t GetEvNo()const {return fEvNo;}
+  ULong64_t GetEvNo() const { return fEvNo; }
 
   // Charge related
   UInt_t GetQNear();
@@ -84,15 +83,16 @@ public:
   // Function to get the delT offset
   double GetOffsetCorrection();
   Long_t GetTStampNear() const;
-  Long_t GetTStampFar();
-  Long_t GetTStampSmall();
-  Long_t GetTStampLarge();
-  Long_t GetTStampAverage();
+  Long_t GetTStampFar() const;
+  Long_t GetTStampSmall() const;
+  Long_t GetTStampLarge() const;
+  Long_t GetTStampAverage() const;
 
   // Function to get the parameterization
   TF1 *GetZParameterization();
 
-  // double GetLogQNearByQFar() { return log((1. * GetQLongFar()) / (1. * GetQLongNear())); }
+  // double GetLogQNearByQFar() { return log((1. * GetQLongFar()) / (1. *
+  // GetQLongNear())); }
 
   // Time related
   /*ULong64_t GetTSmallTimestamp() const;

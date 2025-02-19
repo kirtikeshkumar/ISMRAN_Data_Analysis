@@ -102,9 +102,9 @@ int main(int argc, char *argv[]) {
   for (int i = 100000; i < basketVecSize - 1; i++) {
     logDelT = log10(vecOfBaskets[i + 1]->GetBasketStartTime() -
                     vecOfBaskets[i]->GetBasketEndTime());
-    if (logDelT > 5.3 and logDelT < 5.6 and
-        vecOfBaskets[i]->GetBasketEnergy() > 125) {
-
+    // if (logDelT > 5.3 and logDelT < 5.6 and
+    // vecOfBaskets[i]->GetBasketEnergy() > 125) {
+    if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) < 0.012) {
       TPad *c1_1 = new TPad("c1_1", "PreEvt", 0.01, 0.01, 0.49, 0.99);
       TPad *c1_2 = new TPad("c1_2", "PostEvt", 0.51, 0.01, 0.99, 0.99);
       c1_1->Draw();
@@ -148,10 +148,9 @@ int main(int argc, char *argv[]) {
       if (i > 500000) {
         break;
       }
-      c1->SaveAs(
-          ("../Plots/CorrelatedLowTimeEvents_Band_5dot42/Basket_PrePost_" +
-           std::to_string(i) + ".jpg")
-              .c_str());
+      c1->SaveAs(("../Plots/CorrelatedEvents_420keV/Basket_PrePost_" +
+                  std::to_string(i) + ".jpg")
+                     .c_str());
 
       c1->Clear();
     }
@@ -193,26 +192,35 @@ int main(int argc, char *argv[]) {
   }*/
 
   //// For 3D Hits Density
-  TH1 *hMult = new TH1I("hMult", "Multiplicity of 420 keV", 91, 0, 90);
+  /*TH1 *hMult = new TH1I("hMult", "Multiplicity of 420 keV", 91, 0, 90);
   TH3 *H3Ddensity =
-      new TH3I("H3Ddensity", "3D Hits", 9, 0, 9, 10, 0, 10, 21, -20000, 20000);
+      new TH3I("H3Ddensity", "3D Hits", 9, 0, 9, 10, 0, 10, 101, -1, 1);
   std::vector<ismran::ScintillatorBar_F *> basketscint;
   H3Ddensity->SetStats(0);
   // char* histsavename="../Plots/Basket"
 
   ushort indxb;
+  ushort count = 0;
+  float QRatio;
   for (int i = 0; i < vecOfBaskets.size(); i++) {
     // if (vecOfBaskets[i]->size() >= 2) {
     basketscint = vecOfBaskets[i]->GetBasket();
-    if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) < 0.012) {
+    if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-1)) < 0.025) {
+      // count += 1;
       hMult->Fill(basketscint.size());
+      // std::cout << "muon" << std::endl;
       for (int j = 0; j < basketscint.size(); j++) {
         indxb = basketscint[j]->GetBarIndex();
-        H3Ddensity->Fill(indxb / 10 + 0.5, indxb % 10 + 0.5,
-                         basketscint[j]->GetDelT());
+        QRatio = (basketscint[j]->GetQMean() * 1.0) / basketscint[j]->GetQFar();
+        // std::cout << QRatio << std::endl;
+        // if (count == 3) { // if particular event to be plotted only
+        H3Ddensity->Fill(indxb / 10 + 0.5, indxb % 10 + 0.5, log10(QRatio));
+        // }
       }
+      // if (count == 3) {
+      //   break;
+      // }
     }
-    // break;
   }
   H3Ddensity->GetXaxis()->SetTitle("X");
   H3Ddensity->GetYaxis()->SetTitle("Y");
@@ -223,21 +231,21 @@ int main(int argc, char *argv[]) {
       dataFileName.find("ISMRAN_digi"),
       dataFileName.length() - dataFileName.find("ISMRAN_digi") - 5);
   TFile f(("../../Data_Analysis_Outputs/"
-           "hMult_420keV_BasketSz_" +
+           "hMult_100keV_BasketSz_" +
            std::to_string(basketdT / 1000) + "ns_Threshold_" +
            std::to_string(static_cast<int>(EThres)) + "keV_" + fname + ".root")
               .c_str(),
           "RECREATE");
   hMult->Write();
   f.Close();
-  c1->SaveAs(("../../Data_Analysis_Outputs/"
-              "Basket_Density_420KeV_3D_Canvas_" +
-              std::to_string(basketdT / 1000) + "ns_Threshold_" +
-              std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname +
-              "1.root")
-                 .c_str()); // VLE2_Linear
+  // c1->SaveAs(("../../Data_Analysis_Outputs/"
+  //             "Basket_Density_muon_3D_Canvas_" +
+  //             std::to_string(basketdT / 1000) + "ns_Threshold_" +
+  //             std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname
+  //             + "1.root")
+  //                .c_str()); // VLE2_Linear
   TFile myfile(("../../Data_Analysis_Outputs/"
-                "Basket_Density_420KeV_3D_" +
+                "Basket_Density_100keV_3D_" +
                 std::to_string(basketdT / 1000) + "ns_Threshold_" +
                 std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname +
                 "1.root")
@@ -248,6 +256,7 @@ int main(int argc, char *argv[]) {
   // }
   c1->Clear();
   H3Ddensity->Reset();
+  */
 
   //// For energy Spectra
   ///*TH1* HEUnVeto = new TH1D("HEUnVeto", "", 501, 0, 500);
@@ -299,7 +308,7 @@ int main(int argc, char *argv[]) {
   // fApp->Run();*/
 
   ////For Time Difference
-  /*c1->cd();
+  c1->cd();
   TH1 *hTime = new TH1D("hTime", "", 601, 0.0, 12);
   hTime->SetStats(0);
   hTime->SetLineColor(kGreen);
@@ -318,29 +327,30 @@ int main(int argc, char *argv[]) {
   double preEvtTime = 0;
   double postEvtTime = 0;
 
-  for (int i = 0; i < basketVecSize - 1; i++) {
+  for (int i = 0; i < basketVecSize - 2; i++) {
     // if(vecOfBaskets[i+1]->GetBasketEnergy()<10.0 and
     // vecOfBaskets[i]->GetBasketEnergy()<10.0){
     //
     // hTime->Fill(log10(vecOfBaskets[i + 1]->GetBasketStartTime() -
     // vecOfBaskets[i]->GetBasketEndTime()));
     if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) < 0.012) {
-      // std::cout << "now adding" << std::endl;
+      // fill hTime for particular energy range events i.e both pre and post
+      // events in same energy range
       preEvtTime = postEvtTime;
       postEvtTime = vecOfBaskets[i]->GetBasketStartTime();
       hTime->Fill(log10(postEvtTime - preEvtTime));
     }
-    // if (argc < 6 or numVetoLayers == 0) {
-    //   hTimeEnergy->Fill(log10(vecOfBaskets[i + 1]->GetBasketEnergy()),
-    //                     log10(vecOfBaskets[i + 1]->GetBasketStartTime() -
-    //                           vecOfBaskets[i]->GetBasketEndTime()));
-    //   //if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) <
-    //   0.12)
-    //   //{
-    //   //  hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()),
-    //   //                    (vecOfBaskets[i]->size()));
-    //   //}
-    // }
+    if (argc < 6 or numVetoLayers == 0) {
+      hTimeEnergy->Fill(log10(vecOfBaskets[i + 2]->GetBasketEnergy()),
+                        log10(vecOfBaskets[i + 2]->GetBasketStartTime() -
+                              vecOfBaskets[i]->GetBasketEndTime()));
+      //   //if (fabs(log10(vecOfBaskets[i]->GetBasketEnergy()) - (-0.372)) <
+      //   0.12)
+      //   //{
+      //   //  hEnergyMult->Fill((vecOfBaskets[i]->GetBasketEnergy()),
+      //   //                    (vecOfBaskets[i]->size()));
+      //   //}
+    }
     //}
   }
 
@@ -348,14 +358,16 @@ int main(int argc, char *argv[]) {
   if (argc == 6 and numVetoLayers != 0) {
     for (int i = 0; i < vetoedbasketVecSize - 1; i++) {
       //
-      hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i + 1]->GetBasketStartTime()
-  - vecOfBasketsPostVeto[i]->GetBasketEndTime())); hTimeEnergy->Fill(
+      hTimeVeto->Fill(log10(vecOfBasketsPostVeto[i + 1]->GetBasketStartTime() -
+                            vecOfBasketsPostVeto[i]->GetBasketEndTime()));
+      hTimeEnergy->Fill(
           log10(vecOfBasketsPostVeto[i + 1]->GetBasketEnergy()),
           log10(vecOfBasketsPostVeto[i + 1]->GetBasketStartTime() -
                 vecOfBasketsPostVeto[i]->GetBasketEndTime()));
     }
     std::cout << "histogram hTimeVeto Filled" << std::endl;
   }
+  //
   // gPad->SetLogy();
   // hTime->GetXaxis()->SetTitle("log10(delT)");
   // hTime->GetYaxis()->SetTitle("Counts");
@@ -366,14 +378,21 @@ int main(int argc, char *argv[]) {
   // leg->AddEntry(hTime,"Total TimeDiff Spectra","l");
   // leg->AddEntry(hTimeVeto,"Vetoed TimeDiff Spectra","l");
   // leg->Draw();
-  // std::string fname =
-  //
-  dataFileName.substr(dataFileName.find("ISMRAN_digi"),dataFileName.length()-dataFileName.find("ISMRAN_digi")-5);
-  //
-  c1->SaveAs(("../../Data_Analysis_Outputs/Canvas_InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str());
-  // TFile
-  //
-  myfile(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_"+std::to_string(basketdT/1000)+"ns_Threshold_"+std::to_string(static_cast<int>(EThres))+"keV_"+fname+"1.root").c_str(),"RECREATE");
+  // std::string fname = dataFileName.substr(
+  //     dataFileName.find("ISMRAN_digi"),
+  //     dataFileName.length() - dataFileName.find("ISMRAN_digi") - 5);
+  // //
+  // c1->SaveAs(("../../Data_Analysis_Outputs/Canvas_InterBasketTimeSpectra_" +
+  //             std::to_string(basketdT / 1000) + "ns_Threshold_" +
+  //             std::to_string(static_cast<int>(EThres)) + "keV_" + fname +
+  //             "1.root")
+  //                .c_str());
+  // TFile myfile(("../../Data_Analysis_Outputs/InterBasketTimeSpectra_" +
+  //               std::to_string(basketdT / 1000) + "ns_Threshold_" +
+  //               std::to_string(static_cast<int>(EThres)) + "keV_" + fname +
+  //               "1.root")
+  //                  .c_str(),
+  //              "RECREATE");
   // hTime->Write();
   // myfile.Close();
 
@@ -385,15 +404,20 @@ int main(int argc, char *argv[]) {
   TFile f(("../../Data_Analysis_Outputs/"
            "hTime_BasketSz_" +
            std::to_string(basketdT / 1000) + "ns_Threshold_" +
-           std::to_string(static_cast<int>(EThres)) + "keV_" + fname +
-  ".root") .c_str(), "RECREATE"); hTime->Write(); f.Close(); if (argc < 6 or
-  numVetoLayers == 0) { c1->SaveAs(("../../Data_Analysis_Outputs/"
-                "PostEvent_InterBasketTimeEnergySpectra_Canvas_" +
-                std::to_string(basketdT / 1000) + "ns_Threshold_" +
-                std::to_string(static_cast<int>(EThres)) + "keV_LogE_" + fname
-  + "1.root") .c_str()); // VLE2_Linear TFile
-  myfile(("../../Data_Analysis_Outputs/"
-                  "PostEvent_InterBasketTimeEnergySpectra_" +
+           std::to_string(static_cast<int>(EThres)) + "keV_" + fname + ".root")
+              .c_str(),
+          "RECREATE");
+  hTime->Write();
+  f.Close();
+  if (argc < 6 or numVetoLayers == 0) {
+    // c1->SaveAs(("../../Data_Analysis_Outputs/"
+    //             "PreEvent_InterBasketTimeEnergySpectra_Canvas_" +
+    //             std::to_string(basketdT / 1000) + "ns_Threshold_" +
+    //             std::to_string(static_cast<int>(EThres)) + "keV_LogE_" +
+    //             fname + "1.root")
+    //                .c_str()); // VLE2_Linear TFile
+    TFile myfile(("../../Data_Analysis_Outputs/"
+                  "PostEvent_nextNearestInterBasketTimeEnergySpectra_" +
                   std::to_string(basketdT / 1000) + "ns_Threshold_" +
                   std::to_string(static_cast<int>(EThres)) + "keV_LogE_" +
                   fname + "1.root")
@@ -401,25 +425,26 @@ int main(int argc, char *argv[]) {
                  "RECREATE");
     hTimeEnergy->Write();
     myfile.Close();
-  } else if (argc == 6 and numVetoLayers != 0) {
-    c1->SaveAs(("../../Data_Analysis_Outputs/"
-                "InterBasketTimeEnergySpectra_VetoLayers_Canvas_" +
-                std::to_string(basketdT / 1000) + "ns_Threshold_" +
-                std::to_string(static_cast<int>(EThres)) + "keV_" +
-                std::to_string(numVetoLayers) + "_VetoLayers_VLE2_Linear_" +
-                fname + "1.root")
-                   .c_str());
-    TFile myfile(("../../Data_Analysis_Outputs/"
-                  "InterBasketTimeEnergySpectra_VetoLayers_" +
-                  std::to_string(basketdT / 1000) + "ns_Threshold_" +
-                  std::to_string(static_cast<int>(EThres)) + "keV_" +
-                  std::to_string(numVetoLayers) + "_VetoLayers_VLE2_Linear_" +
-                  fname + "1.root")
-                     .c_str(),
-                 "RECREATE");
-    hTimeEnergy->Write();
-    myfile.Close();
-  }*/
+  }
+  // else if (argc == 6 and numVetoLayers != 0) {
+  //   c1->SaveAs(("../../Data_Analysis_Outputs/"
+  //               "InterBasketTimeEnergySpectra_VetoLayers_Canvas_" +
+  //               std::to_string(basketdT / 1000) + "ns_Threshold_" +
+  //               std::to_string(static_cast<int>(EThres)) + "keV_" +
+  //               std::to_string(numVetoLayers) + "_VetoLayers_VLE2_Linear_" +
+  //               fname + "1.root")
+  //                  .c_str());
+  //   TFile myfile(("../../Data_Analysis_Outputs/"
+  //                 "InterBasketTimeEnergySpectra_VetoLayers_" +
+  //                 std::to_string(basketdT / 1000) + "ns_Threshold_" +
+  //                 std::to_string(static_cast<int>(EThres)) + "keV_" +
+  //                 std::to_string(numVetoLayers) + "_VetoLayers_VLE2_Linear_"
+  //                 + fname + "1.root")
+  //                    .c_str(),
+  //                "RECREATE");
+  //   hTimeEnergy->Write();
+  //   myfile.Close();
+  // }
 
   ///*hEnergyMult->DrawCopy("colz");
   // std::string fname =

@@ -11,11 +11,11 @@
 #include <memory>
 #include <vector>
 #pragma once
-#include <TROOT.h>
 #include <TMath.h>
-#include <algorithm>  
-#include <numeric>    
+#include <TROOT.h>
+#include <algorithm>
 #include <cmath>
+#include <numeric>
 
 namespace ismran {
 
@@ -23,20 +23,20 @@ class ScintillatorBar_F;
 
 class SingleBasket {
 private:
-  std::vector<ScintillatorBar_F*> fVecOfScintillators;
-  //std::vector<ushort*> fVecOfNeighbours;
+  std::vector<ScintillatorBar_F *> fVecOfScintillators;
+  // std::vector<ushort*> fVecOfNeighbours;
   Double_t BasketEnergy;
-  //ushort COMIndex;	//Index of Center Of Mass bar
-  //ULong64_t meanT;	//Average time of basket
-  //Double_t sigX;	//Stdev of basket spread in x direction
-  //Double_t sigY;	//Stdev of basket spread in y direction
-  //uint sigT;		//Stdev of basket spread in time
+  // ushort COMIndex;	//Index of Center Of Mass bar
+  // ULong64_t meanT;	//Average time of basket
+  // Double_t sigX;	//Stdev of basket spread in x direction
+  // Double_t sigY;	//Stdev of basket spread in y direction
+  // uint sigT;		//Stdev of basket spread in time
 public:
   /*
    * Various constructors
    */
   SingleBasket();
-  SingleBasket(std::vector<ScintillatorBar_F*> vecOfScintBars);
+  SingleBasket(std::vector<ScintillatorBar_F *> vecOfScintBars);
   SingleBasket(const SingleBasket &smt);
 
   /*
@@ -50,18 +50,18 @@ public:
   /*
    * Required Getters
    */
-  std::vector<ScintillatorBar_F*> GetBasket() const;
-  //std::vector<ushort*> GetBasketNeighbours() const;
-  ScintillatorBar_F* GetEvent(int EvtIndx);
+  std::vector<ScintillatorBar_F *> GetBasket() const;
+  // std::vector<ushort*> GetBasketNeighbours() const;
+  ScintillatorBar_F *GetEvent(int EvtIndx);
   ULong64_t GetBasketEventTime(int EvtIndx);
   ULong64_t GetBasketStartTime();
   ULong64_t GetBasketEndTime();
   ULong64_t GetBasketDuration();
-  //ULong64_t GetBasketMeanTime();
-  //uint GetBasketStdDevT();
-  //Double_t GetBasketStdDevX();
-  //Double_t GetBasketStdDevY();
-  //ushort GetBasketCOMBar();
+  // ULong64_t GetBasketMeanTime();
+  // uint GetBasketStdDevT();
+  // Double_t GetBasketStdDevX();
+  // Double_t GetBasketStdDevY();
+  // ushort GetBasketCOMBar();
   Double_t GetBasketEnergy();
   Double_t GetBasketBarEnergy(int evtIndx);
   bool isBarInBasket(ushort barIndx);
@@ -73,16 +73,16 @@ public:
   /*
    * Setters
    */
-   void SetBasketEnergy();
-   void SetBasketEnergy(Double_t E);
-   //void SetBasketParameters();
-   //void SetBasketMeanTime();
-   //void SetBasketStdDevT();
-   //void SetBasketNeighbours();
-   //void SetBasketNeighbours(ScintillatorBar_F *bar);
-   //void SetBasketMeanTime(ULong64_t val);
-   //void SetBasketStdDevT(uint val);
-   void Initialiser();
+  void SetBasketEnergy();
+  void SetBasketEnergy(Double_t E);
+  // void SetBasketParameters();
+  // void SetBasketMeanTime();
+  // void SetBasketStdDevT();
+  // void SetBasketNeighbours();
+  // void SetBasketNeighbours(ScintillatorBar_F *bar);
+  // void SetBasketMeanTime(ULong64_t val);
+  // void SetBasketStdDevT(uint val);
+  void Initialiser();
 
   ~SingleBasket();
 
