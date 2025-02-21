@@ -11,6 +11,8 @@
 #include "SingleAnimal.h"
 #include "SingleBasket.h"
 #include "SingleMuonTrack.h"
+#include "TMath.h"
+#include "TMathBase.h"
 #include "TreeEntry.h"
 #include "colors.h"
 #include <iostream>
@@ -369,12 +371,14 @@ std::vector<SingleMuonTrack *> Analyzer_F::ReconstructMuonTrack() {
 }
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructBasket() {
-  /*std::cout << "Going to Create Baskets based on delT between events"
+  std::cout << "Going to Create Baskets based on event duration and clustering"
             << std::endl;
+
   std::sort(fVecOfScint_F.begin(), fVecOfScint_F.end(),
             CompareTimestampScintillator);
   unsigned int scintVecSize = fVecOfScint_F.size();
   std::cout << "ScintVectSize : " << scintVecSize << std::endl;
+
   SingleBasket *singleBasket = new SingleBasket();
   // std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
   std::vector<SingleBasket *> sbVec;
@@ -385,45 +389,115 @@ std::vector<SingleBasket *> Analyzer_F::ReconstructBasket() {
   basketFile->cd();
   TTree *basketTree = new TTree("basketTree", "basketTree");
   basketTree->Branch("Baskets", "ismran::SingleBasket", &singleBasket);
+
+  uint sigrange = 1;
+
   ULong64_t tStart = fVecOfScint_F[0]->GetTStampSmall();
-  double_t delt = 0;
+  ULong64_t tEnd = fVecOfScint_F[0]->GetTStampLarge();
   singleBasket->push_back(fVecOfScint_F[0]);
+  // assuming that each hit is like a gaussian and tEvtStart and tEvtEnd give
+  // the duration in which 95% event is collected.
+  double sigBasketTime =
+      (tEnd - tStart) /
+      (2.0 * sigrange); // Considereing that start and end time represent
+                        // the 2 sigma interval of signal acquisition
+  double avBasketTime = sigrange * sigBasketTime + tStart;
+  // 0.5 * singleBasket->GetBasketDuration(); // Since the start time of first
+  // event in basket taken as 0
+  double avBasketTimeSq =
+      TMath::Power(sigBasketTime, 2) + TMath::Power(avBasketTime, 2);
+  //     TMath::Power(singleBasket->GetBasketDuration(), 2) /
+  //     3.0; // Since the start time of first event is taken as 0
+  UShort_t BasketNetDelT = 1;
+
+  double avEvtTime = 0;
+  double avEvtTimeSq = 0;
+  double EvtDelT = 0;
+  double EvtSigT = 0;
+  ULong64_t tStartEvt, tEndEvt;
+
   // std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
   bool properev = true;
   UInt_t badcounter = 0;
   unsigned short int maxU_16bits = USHRT_MAX;
   UInt_t maskingVal = maxU_16bits;
+
   for (unsigned int i = 1; i < scintVecSize; i++) {
-    if (fVecOfScint_F[i]->GetTStampSmall() - singleBasket->GetBasketEndTime() <
-        50000) {
-      // 2 consecutive events within 50ns window
-      singleBasket->push_back(fVecOfScint_F[i]);
-      if (fVecOfScint_F[i]->GetQFar() == 0 or
-          fVecOfScint_F[i]->GetQNear() == 0) {
-        // events where QFar or QNear is 0 must be neglected properev=false;
-        badcounter += 1;
-      }
+    // Event Variables
+    EvtDelT = fVecOfScint_F[i]->GetDelT();
+    if ((i - 1) % 1000000 == 0) {
+      std::cout << " Processing event : " << i << std::endl;
+      std::cout << "Number of  Baskets: " << sbVec.size() << std::endl;
+      std::cout << "Current Basket Size: " << singleBasket->size() << std::endl;
+    }
+    if (fVecOfScint_F[i]->GetQFar() == 0 or fVecOfScint_F[i]->GetQNear() == 0 or
+        EvtDelT > 30000) {
+      // events where QFar or QNear is 0 must be neglected
+      // events with large DelT are probably random coincidence
+      // properev=false;
+      badcounter += 1;
+      continue;
+    }
+
+    tStartEvt = fVecOfScint_F[i]->GetTStampSmall();
+    tEndEvt = fVecOfScint_F[i]->GetTStampLarge();
+    EvtSigT = EvtDelT / (2.0 * sigrange);
+    // EvtSigT = EvtDelT / TMath::Sqrt(12.0); //for uniform distribution
+    avEvtTime = EvtSigT * sigrange + tStartEvt - tStart;
+    // avEvtTime = tStartEvt - tStart + 0.5 * EvtDelT;  //for uniform
+    // distribution
+    avEvtTimeSq =
+        TMath::Power(EvtSigT, 2) + TMath::Power(avEvtTime, 2); // sigma^2 + mu^2
+
+    if (((avEvtTime - avBasketTime) < 2 * (EvtSigT + sigBasketTime)) or
+        ((avEvtTime - avBasketTime) < 20000)) {
+      // the next event and current basket are seperated by less than 2sigma or
+      // 20ns wichever is larger
+
+      singleBasket->push_back(fVecOfScint_F[i]); // Add Event to basket
+
+      // Update basket parameters
+      avBasketTime =
+          (BasketNetDelT * avBasketTime + avEvtTime) / (BasketNetDelT + 1);
+      // avBasketTime = (BasketNetDelT * avBasketTime + EvtDelT * avEvtTime) /
+      //                (BasketNetDelT + EvtDelT);
+      avBasketTimeSq =
+          (BasketNetDelT * avBasketTimeSq + avEvtTimeSq) / (BasketNetDelT + 1);
+      // avBasketTimeSq =
+      //     (BasketNetDelT * avBasketTimeSq + EvtDelT * avEvtTimeSq) /
+      //     (BasketNetDelT + EvtDelT);
+      sigBasketTime =
+          TMath::Sqrt((avBasketTimeSq - avBasketTime * avBasketTime));
+      BasketNetDelT = BasketNetDelT + 1; // EvtDelT // for uniform distribution
+      tEnd = TMath::Max(tEnd, tEndEvt);
       // std::cout<<singleBasket->GetBasketEnergy()<<std::endl;
     } else {
-      if (properev) {
-        sbVec.push_back(new SingleBasket(*singleBasket));
-        basketTree->Fill();
-      }
-      // singleBasket->SetBasketParameters();
-      // std::cout<<" Basket Energy Is
-      // "<<singleBasket->GetBasketEnergy()<<std::endl; singleBasket->clear();
-      properev = true;
-      //
-  std::cout<<"________________________________________________________"<<std::endl;
+      // this Event starts a new basket
+
+      // if (properev) {
+      // Push the completed basket
+      sbVec.push_back(new SingleBasket(*singleBasket));
+      basketTree->Fill();
+      // }
+
+      singleBasket->clear();
       singleBasket->push_back(fVecOfScint_F[i]);
-      tStart = fVecOfScint_F[i]->GetTStampSmall();
+
+      avBasketTime =
+          avEvtTime - (tStartEvt - tStart); // shifting the start time
+      sigBasketTime = EvtSigT;
+      avBasketTimeSq =
+          sigBasketTime * sigBasketTime + avBasketTime * avBasketTime;
+      BasketNetDelT = 1; // singleBasket->GetBasketDuration();
+      tStart = tStartEvt;
+      tEnd = tEndEvt;
     }
     //   }
   }
   std::cout << "SBVec size : " << sbVec.size() << std::endl;
   basketTree->Write();
   basketFile->Close();
-  return sbVec;*/
+  return sbVec;
 }
 
 std::vector<SingleBasket *> Analyzer_F::ReconstructBasket(uint basketdT) {
